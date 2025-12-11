@@ -662,6 +662,157 @@
       font-weight: 600;
       color: var(--text-main);
     }
+
+    /* Profil ve avatar */
+    .avatar-img {
+      width: 64px;
+      height: 64px;
+      border-radius: 12px;
+      object-fit: cover;
+      border: 2px solid var(--card-border);
+      background: var(--card-bg);
+    }
+
+    .profile-hero {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    .profile-hero .avatar-img {
+      width: 84px;
+      height: 84px;
+      border-radius: 16px;
+    }
+    .profile-meta {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .meta-pill {
+      border: 1px dashed var(--card-border);
+      border-radius: 8px;
+      padding: 10px;
+      font-size: 13px;
+      background: var(--pill-bg);
+    }
+    .meta-label {
+      color: var(--text-muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .meta-value { font-weight: 700; }
+
+    .avatar-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .avatar-choice {
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--card-bg);
+      transition: border var(--transition-fast), transform var(--transition-fast);
+    }
+    .avatar-choice:hover {
+      border-color: var(--btn-info);
+      transform: translateY(-1px);
+    }
+    .avatar-choice.selected {
+      border-color: var(--btn-primary);
+      box-shadow: 0 0 0 1px var(--btn-primary) inset;
+    }
+    .avatar-choice img {
+      width: 60px;
+      height: 60px;
+      object-fit: cover;
+      border-radius: 12px;
+      border: 1px solid var(--card-border);
+      background: var(--card-bg);
+    }
+    .avatar-choice .avatar-name {
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    /* Sohbet */
+    .chat-wrapper { display: flex; flex-direction: column; gap: 10px; }
+    .chat-online {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(34,197,94,0.15);
+      color: #22c55e;
+      font-weight: 700;
+      font-size: 12px;
+      width: fit-content;
+    }
+    .chat-card {
+      display: flex;
+      align-items: stretch;
+      gap: 10px;
+    }
+    .chat-body {
+      flex: 1;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .chat-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .chat-message {
+      font-size: 14px;
+      color: var(--text-main);
+    }
+    .chat-avatar {
+      width: 54px;
+      height: 54px;
+      border-radius: 12px;
+      object-fit: cover;
+      border: 1px solid var(--card-border);
+      background: var(--card-bg);
+    }
+    .chat-input-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 6px;
+    }
+    .chat-input-row input {
+      flex: 1;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--card-border);
+      background: var(--bg-body);
+      color: var(--text-main);
+    }
+    .chat-input-row button { white-space: nowrap; }
+
+    .badge-own {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: rgba(37,99,235,0.15);
+      color: var(--btn-info);
+      font-size: 11px;
+      font-weight: 700;
+      margin-left: 6px;
+    }
   </style>
 </head>
 <body class="mode-dark">
@@ -730,7 +881,7 @@
           Aile: <span id="home-family">Yok</span>
         </div>
         <div class="profile-avatar-center" id="open-profile">
-          <div class="avatar-icon">😈</div>
+          <img id="home-avatar" class="avatar-img" src="" alt="Profil" />
           <div class="avatar-username" id="player-username"></div>
         </div>
         <div class="profile-side">
@@ -894,12 +1045,13 @@
     <!-- CHAT / SOHBET -->
     <section class="page" data-page="chat">
       <h2 class="page-title">Sohbet</h2>
-      <p class="hint">Sohbet sistemi yakında aktif olacak.</p>
-      <div class="card">
-        <p style="margin:0;font-size:14px;">
-          Buradan oyuncular arası sohbet, bildirimler veya duyurular görünebilir. (Placeholder)
-        </p>
+      <p class="hint">Canlı sohbet açık. Mesajların sağında göndericinin profil fotoğrafı görünür.</p>
+      <div class="chat-wrapper" id="chat-messages"></div>
+      <div class="chat-input-row">
+        <input id="chat-input" type="text" placeholder="Mesaj yaz..." maxlength="200" />
+        <button class="btn btn-primary" id="chat-send-btn">Gönder</button>
       </div>
+      <div class="chat-online" style="margin-top:8px;">● Çevrimiçi</div>
     </section>
 
     <!-- SETTINGS -->
@@ -919,11 +1071,37 @@
     <!-- PROFILE PAGE -->
 <section class="page" data-page="profile">
   <h2 class="page-title">Profilim</h2>
-  <p class="hint">Hesap bilgilerin burada görünecek.</p>
+  <p class="hint">Avatarını seç, bilgilerinde düzenle.</p>
 
   <div class="card">
-    <h3 style="margin-bottom:6px;font-size:16px;">Kullanıcı Adı</h3>
-    <p id="profile-username" style="font-size:14px;"></p>
+    <div class="profile-hero">
+      <img id="profile-avatar" class="avatar-img" src="" alt="Profil" />
+      <div>
+        <h3 style="margin:0 0 6px 0;font-size:18px;" id="profile-username"></h3>
+        <p style="margin:0;font-size:13px;color:var(--text-muted);">Hesap No: <span id="profile-account-number">-</span></p>
+      </div>
+    </div>
+    <div class="profile-meta">
+      <div class="meta-pill">
+        <div class="meta-label">Aile</div>
+        <div class="meta-value" id="profile-family">-</div>
+      </div>
+      <div class="meta-pill">
+        <div class="meta-label">Semt</div>
+        <div class="meta-value" id="profile-district">-</div>
+      </div>
+      <div class="meta-pill">
+        <div class="meta-label">Nakit</div>
+        <div class="meta-value"><span id="profile-coins">0</span> TL</div>
+      </div>
+      <div class="meta-pill">
+        <div class="meta-label">İnek</div>
+        <div class="meta-value"><span id="profile-cow-count">0</span> adet</div>
+      </div>
+    </div>
+    <div class="card-actions" style="margin-top:12px;">
+      <button class="btn btn-info" id="edit-avatar-btn" style="width:100%;">Profil Fotoğrafını Düzenle</button>
+    </div>
   </div>
 </section>
   </main>
@@ -982,6 +1160,20 @@
     </div>
   </div>
 
+  <!-- AVATAR PICKER -->
+  <div class="overlay" id="avatar-overlay">
+    <div class="dialog">
+      <div class="dialog-title">Profil Fotoğrafı Seç</div>
+      <div class="dialog-body" style="max-height:360px;overflow:auto;">
+        <div class="avatar-grid" id="avatar-grid"></div>
+      </div>
+      <div class="dialog-actions">
+        <button class="btn btn-secondary" id="avatar-cancel-btn">Kapat</button>
+        <button class="btn btn-primary" id="avatar-save-btn">Kaydet</button>
+      </div>
+    </div>
+  </div>
+
   <script>
   // ==========================
   // SABİTLER
@@ -989,7 +1181,17 @@
   const AUTH_KEYS = {
     accounts: "mafya_accounts_v1",
     bazaarListings: "mafya_bazaar_v1",
+    chat: "mafya_chat_v1",
   };
+
+  const AVATAR_BASE = [
+    { id: "lucky", label: "Lucky", colors: ["#111827", "#22c55e"] },
+    { id: "rebel", label: "Rebel", colors: ["#0f172a", "#f97316"] },
+    { id: "sinner", label: "Sinner", colors: ["#0f172a", "#3b82f6"] },
+    { id: "blond", label: "Blond", colors: ["#0f172a", "#eab308"] },
+    { id: "hate", label: "Hate", colors: ["#111827", "#ef4444"] },
+  ];
+  let AVATAR_OPTIONS = [];
 
   const COW_PRICE = 1000;
   const MILK_COOLDOWN_MS = 3 * 60 * 60 * 1000;
@@ -1024,6 +1226,7 @@
   let currentUser = null;
   let currentAccount = null;
   let marketListings = [];
+  let chatMessages = [];
 
   let currentCoins = 0;
   let currentMilk = 0;
@@ -1055,6 +1258,7 @@
   const navButtons = document.querySelectorAll(".bottom-nav button");
   const backButton = document.getElementById("back-button");
 
+  const homeAvatarEl = document.getElementById("home-avatar");
   const homeDistrictEl = document.getElementById("home-district");
   const homeFamilyEl = document.getElementById("home-family");
   const playerUsernameEl = document.getElementById("player-username");
@@ -1098,6 +1302,24 @@
 
   const settingsUsernameText = document.getElementById("settings-username-text");
 
+  const profileUsernameEl = document.getElementById("profile-username");
+  const profileAvatarEl = document.getElementById("profile-avatar");
+  const profileFamilyEl = document.getElementById("profile-family");
+  const profileDistrictEl = document.getElementById("profile-district");
+  const profileCoinsEl = document.getElementById("profile-coins");
+  const profileCowCountEl = document.getElementById("profile-cow-count");
+  const profileAccountNumberEl = document.getElementById("profile-account-number");
+  const editAvatarBtn = document.getElementById("edit-avatar-btn");
+
+  const avatarOverlay = document.getElementById("avatar-overlay");
+  const avatarGridEl = document.getElementById("avatar-grid");
+  const avatarCancelBtn = document.getElementById("avatar-cancel-btn");
+  const avatarSaveBtn = document.getElementById("avatar-save-btn");
+
+  const chatMessagesEl = document.getElementById("chat-messages");
+  const chatInputEl = document.getElementById("chat-input");
+  const chatSendBtn = document.getElementById("chat-send-btn");
+
   const bankAccountNumberEl = document.getElementById("bank-account-number");
   const bankBalanceEl = document.getElementById("bank-balance");
   const bankCopyBtn = document.getElementById("bank-copy-btn");
@@ -1115,6 +1337,22 @@
     toastEl.textContent = msg;
     toastEl.classList.add("show");
     setTimeout(() => toastEl.classList.remove("show"), 2000);
+  }
+
+  function createAvatarData(label, c1, c2) {
+    const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'>` +
+      `<defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0%' stop-color='${c1}'/><stop offset='100%' stop-color='${c2}'/></linearGradient></defs>` +
+      `<rect width='200' height='200' rx='20' fill='url(#g)'/>` +
+      `<text x='50%' y='54%' dominant-baseline='middle' text-anchor='middle' fill='white' font-size='44' font-family='Arial' font-weight='700'>${label}</text>` +
+      `</svg>`;
+    return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+  }
+
+  function buildAvatarOptions() {
+    AVATAR_OPTIONS = AVATAR_BASE.map((item) => ({
+      ...item,
+      url: createAvatarData(item.label, item.colors[0], item.colors[1]),
+    }));
   }
 
   function requireAccount() {
@@ -1159,6 +1397,20 @@
       accounts = {};
     }
     ensureAccountNumbersForAll();
+  }
+
+  function getDefaultAvatarUrl() {
+    return AVATAR_OPTIONS[0]?.url || "";
+  }
+
+  function getAvatarById(id) {
+    const found = AVATAR_OPTIONS.find((a) => a.id === id);
+    return found ? found.url : getDefaultAvatarUrl();
+  }
+
+  function ensureAvatarField(acc) {
+    if (!acc.avatarId && AVATAR_OPTIONS[0]) acc.avatarId = AVATAR_OPTIONS[0].id;
+    if (!acc.avatar) acc.avatar = getAvatarById(acc.avatarId) || getDefaultAvatarUrl();
   }
 
   function saveAccounts() {
@@ -1252,6 +1504,8 @@
       family: "Yok",
       district: "Belirtilmemiş",
       accountNumber: generateUniqueAccountNumber(),
+      avatarId: AVATAR_OPTIONS[0]?.id || "",
+      avatar: getDefaultAvatarUrl(),
     };
   }
 
@@ -1278,6 +1532,7 @@
     if (!currentAccount.mode) currentAccount.mode = "dark";
     if (!currentAccount.family) currentAccount.family = "Yok";
     if (!currentAccount.district) currentAccount.district = "Belirtilmemiş";
+    ensureAvatarField(currentAccount);
 
     ensureCurrentAccountNumber();
     saveAccounts();
@@ -1297,6 +1552,27 @@
       const savedUser = localStorage.getItem("username");
       playerUsernameEl.textContent = savedUser || currentAccount.username || "-";
     }
+
+    updateHomeAvatar();
+  }
+
+  function getAvatarForUsername(username) {
+    const acc = accounts[username];
+    if (acc) {
+      ensureAvatarField(acc);
+      saveAccounts();
+      return acc.avatar || getDefaultAvatarUrl();
+    }
+    return getDefaultAvatarUrl();
+  }
+
+  function updateHomeAvatar() {
+    if (!homeAvatarEl) return;
+    if (!currentAccount) {
+      homeAvatarEl.src = getDefaultAvatarUrl();
+      return;
+    }
+    homeAvatarEl.src = currentAccount.avatar || getDefaultAvatarUrl();
   }
 
   function findAccountByNumber(number) {
@@ -1441,6 +1717,8 @@
     if (!currentAccount) return;
     currentAccount.coins = currentCoins;
     saveAccounts();
+    renderProfilePage();
+    updateBankView();
   }
 
   function loadMilk() {
@@ -1611,6 +1889,7 @@
     });
 
     cowCountEl.textContent = cows.length;
+    renderProfilePage();
   }
 
   if (collectAllBtn) {
@@ -1968,7 +2247,18 @@
       buyBtnEl.className = "btn btn-primary";
       buyBtnEl.style.width = "100%";
       buyBtnEl.textContent = "Satın Al";
-      buyBtnEl.addEventListener("click", () => openBazaarBuyPopup(listing.id));
+      const isOwn = currentUser && listing.seller === currentUser;
+      if (isOwn) {
+        buyBtnEl.disabled = true;
+        buyBtnEl.classList.add("btn-disabled");
+        buyBtnEl.textContent = "Kendi ilanın";
+        const badge = document.createElement("span");
+        badge.className = "badge-own";
+        badge.textContent = "Senin ilan";
+        seller.appendChild(badge);
+      } else {
+        buyBtnEl.addEventListener("click", () => openBazaarBuyPopup(listing.id));
+      }
 
       btnRow.appendChild(buyBtnEl);
 
@@ -1989,6 +2279,11 @@
     if (!listing) {
       showToast("İlan bulunamadı ❌");
       renderBazaar();
+      return;
+    }
+
+    if (listing.seller === currentUser) {
+      showToast("Kendi ilanını alamazsın ❌");
       return;
     }
 
@@ -2105,6 +2400,121 @@
   }
 
   // ==========================
+  // SOHBET
+  // ==========================
+  function loadChatMessages() {
+    const raw = localStorage.getItem(AUTH_KEYS.chat);
+    if (!raw) {
+      chatMessages = [];
+      seedChat();
+      return;
+    }
+    try {
+      const arr = JSON.parse(raw);
+      chatMessages = Array.isArray(arr) ? arr : [];
+    } catch {
+      chatMessages = [];
+    }
+    if (chatMessages.length === 0) seedChat();
+  }
+
+  function saveChatMessages() {
+    localStorage.setItem(AUTH_KEYS.chat, JSON.stringify(chatMessages));
+  }
+
+  function seedChat() {
+    chatMessages = [
+      {
+        id: `${Date.now()}_seed1`,
+        user: "Rebel_Ricco",
+        avatar: getAvatarById("rebel"),
+        text: "Pazarda fiyatlar uçmuş, dikkat edin!",
+        createdAt: Date.now() - 1000 * 60 * 15,
+      },
+      {
+        id: `${Date.now()}_seed2`,
+        user: "LuckyBoss",
+        avatar: getAvatarById("lucky"),
+        text: "Akşam baskını var diyorlar, stok yapın!",
+        createdAt: Date.now() - 1000 * 60 * 8,
+      },
+    ];
+    saveChatMessages();
+  }
+
+  function renderChat() {
+    if (!chatMessagesEl) return;
+    chatMessagesEl.innerHTML = "";
+    const sorted = chatMessages.slice().sort((a, b) => a.createdAt - b.createdAt);
+    sorted.forEach((msg) => {
+      const row = document.createElement("div");
+      row.className = "chat-card";
+
+      const body = document.createElement("div");
+      body.className = "chat-body";
+      const header = document.createElement("div");
+      header.className = "chat-header";
+      const name = document.createElement("div");
+      name.textContent = msg.user;
+      const time = document.createElement("div");
+      const d = new Date(msg.createdAt);
+      time.textContent = `${d.getHours().toString().padStart(2, "0")}:${d
+        .getMinutes()
+        .toString()
+        .padStart(2, "0")}`;
+      header.appendChild(name);
+      header.appendChild(time);
+      const text = document.createElement("div");
+      text.className = "chat-message";
+      text.textContent = msg.text;
+      body.appendChild(header);
+      body.appendChild(text);
+
+      const avatar = document.createElement("img");
+      avatar.className = "chat-avatar";
+      if (currentAccount && msg.user === currentAccount.username) {
+        avatar.src = currentAccount.avatar || getDefaultAvatarUrl();
+      } else {
+        avatar.src = msg.avatar || getDefaultAvatarUrl();
+      }
+      avatar.alt = msg.user;
+
+      row.appendChild(body);
+      row.appendChild(avatar);
+      chatMessagesEl.appendChild(row);
+    });
+  }
+
+  function sendChatMessage() {
+    if (!requireAccount()) return;
+    const text = (chatInputEl?.value || "").trim();
+    if (!text) return;
+    const msg = {
+      id: `${Date.now()}_${Math.random()}`,
+      user: currentAccount.username,
+      avatar: currentAccount.avatar || getDefaultAvatarUrl(),
+      text,
+      createdAt: Date.now(),
+    };
+    chatMessages.push(msg);
+    saveChatMessages();
+    renderChat();
+    chatInputEl.value = "";
+  }
+
+  if (chatSendBtn) {
+    chatSendBtn.addEventListener("click", sendChatMessage);
+  }
+  if (chatInputEl) {
+    chatInputEl.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        sendChatMessage();
+      }
+    });
+  }
+
+  // ==========================
   // AYARLAR & FABRİKA
   // ==========================
   function updateSettingsView() {
@@ -2114,6 +2524,51 @@
       settingsUsernameText.textContent =
         "Kullanıcı: " + (currentAccount.username || "-");
     }
+  }
+
+  function renderProfilePage() {
+    if (!currentAccount || !profileAvatarEl || !profileUsernameEl) return;
+    profileUsernameEl.textContent = currentAccount.username || "-";
+    profileAvatarEl.src = currentAccount.avatar || getDefaultAvatarUrl();
+    profileFamilyEl.textContent = currentAccount.family || "Yok";
+    profileDistrictEl.textContent = currentAccount.district || "Belirtilmemiş";
+    profileCoinsEl.textContent = currentAccount.coins || 0;
+    profileCowCountEl.textContent = cows.length || 0;
+    profileAccountNumberEl.textContent = currentAccount.accountNumber || "-";
+  }
+
+  function renderAvatarGrid(selectedId) {
+    if (!avatarGridEl) return;
+    avatarGridEl.innerHTML = "";
+    AVATAR_OPTIONS.forEach((opt) => {
+      const btn = document.createElement("div");
+      btn.className = "avatar-choice";
+      if (opt.id === selectedId) btn.classList.add("selected");
+      const img = document.createElement("img");
+      img.src = opt.url;
+      img.alt = opt.label;
+      const name = document.createElement("div");
+      name.className = "avatar-name";
+      name.textContent = opt.label;
+      btn.appendChild(img);
+      btn.appendChild(name);
+      btn.addEventListener("click", () => {
+        document
+          .querySelectorAll(".avatar-choice")
+          .forEach((el) => el.classList.remove("selected"));
+        btn.classList.add("selected");
+        btn.dataset.selected = "1";
+        avatarGridEl.dataset.selectedId = opt.id;
+      });
+      avatarGridEl.appendChild(btn);
+    });
+    avatarGridEl.dataset.selectedId = selectedId || (AVATAR_OPTIONS[0]?.id || "");
+  }
+
+  function openAvatarPicker() {
+    if (!currentAccount) return;
+    renderAvatarGrid(currentAccount.avatarId || AVATAR_OPTIONS[0]?.id || "");
+    avatarOverlay.classList.add("active");
   }
 
   function getFactoryState() {
@@ -2327,6 +2782,32 @@
     });
   }
 
+  if (editAvatarBtn) {
+    editAvatarBtn.addEventListener("click", openAvatarPicker);
+  }
+  if (avatarCancelBtn) {
+    avatarCancelBtn.addEventListener("click", () => avatarOverlay.classList.remove("active"));
+  }
+  if (avatarOverlay) {
+    avatarOverlay.addEventListener("click", (e) => {
+      if (e.target === avatarOverlay) avatarOverlay.classList.remove("active");
+    });
+  }
+  if (avatarSaveBtn) {
+    avatarSaveBtn.addEventListener("click", () => {
+      if (!currentAccount) return;
+      const selectedId = avatarGridEl?.dataset.selectedId || AVATAR_OPTIONS[0]?.id;
+      currentAccount.avatarId = selectedId;
+      currentAccount.avatar = getAvatarById(selectedId);
+      saveAccounts();
+      updateHomeAvatar();
+      renderProfilePage();
+      renderChat();
+      avatarOverlay.classList.remove("active");
+      showToast("Profil fotoğrafı güncellendi ✅");
+    });
+  }
+
   // ==========================
   // NAVİGASYON
   // ==========================
@@ -2359,11 +2840,14 @@
     loadContraband();
     loadCows();
     loadMarketListings();
+    loadChatMessages();
     updateCountdown();
     updateInventoryView();
     applyMode();
     updateSettingsView();
     updateHomeProfileStrip();
+    renderProfilePage();
+    renderChat();
     renderBazaar();
     renderFactoryView();
     updateBankView();
@@ -2371,18 +2855,23 @@
   }
 
   (function init() {
+    buildAvatarOptions();
     loadAccounts();
     loadMarketListings();
     showAuth();
   })();
   
-  document.getElementById("open-profile").addEventListener("click", () => {
-  showPage("profile");
+  function openProfilePage() {
+    renderProfilePage();
+    showPage("profile");
+  }
 
-  const savedUser = localStorage.getItem("username");
-  document.getElementById("profile-username").textContent =
-    savedUser || currentAccount?.username || "-";
-});
+  if (document.getElementById("open-profile")) {
+    document.getElementById("open-profile").addEventListener("click", openProfilePage);
+  }
+  if (playerUsernameEl) {
+    playerUsernameEl.addEventListener("click", openProfilePage);
+  }
   </script>
 </body>
 </html>
