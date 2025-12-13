@@ -626,36 +626,16 @@
       letter-spacing: 0.04em;
     }
 
-    /* Banka sayfası hızlı kısayolları */
-    .bank-quick-actions {
+    /* Banka ana ekran butonları */
+    .bank-actions-grid {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 10px;
-      margin-bottom: 12px;
+      gap: 12px;
+      margin: 8px 0 4px;
     }
-    .bank-action-button {
-      background: var(--card-bg);
-      border-radius: var(--radius-card);
+    .bank-main-button {
       border: 1px solid var(--card-border);
-      padding: 12px 8px 10px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 6px;
-      cursor: pointer;
-      transition: border-color var(--transition-fast), transform var(--transition-fast);
-    }
-    .bank-action-button:active {
-      transform: translateY(1px);
-    }
-    .bank-action-emoji {
-      font-size: 20px;
-    }
-    .bank-action-label {
-      font-size: 13px;
-      font-weight: 700;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
+      background: var(--card-bg);
     }
 
     /* Banka hareketleri */
@@ -1063,30 +1043,26 @@
       <h2 class="page-title">Banka</h2>
       <p class="hint">11 haneli hesap numaranla oyunculara para gönder.</p>
 
-      <div class="bank-quick-actions">
-        <button class="bank-action-button" data-scroll-target="bank-info-card">
-          <div class="bank-action-emoji">📄</div>
-          <div class="bank-action-label">Bilgiler</div>
+      <div class="bank-actions-grid">
+        <button class="home-main-button bank-main-button" data-target="bank-transfer">
+          <div class="home-main-button-emoji">💸</div>
+          <div class="home-main-button-label">Havale &amp; EFT</div>
         </button>
-        <button class="bank-action-button" data-scroll-target="bank-transfer-card">
-          <div class="bank-action-emoji">💸</div>
-          <div class="bank-action-label">Para Gönder</div>
+        <button class="home-main-button bank-main-button" data-target="bank-history">
+          <div class="home-main-button-emoji">🧾</div>
+          <div class="home-main-button-label">Hesap Hareketleri</div>
         </button>
-        <button class="bank-action-button" data-scroll-target="bank-history-card">
-          <div class="bank-action-emoji">🧾</div>
-          <div class="bank-action-label">Hareketler</div>
+        <button class="home-main-button bank-main-button" data-target="bank-info">
+          <div class="home-main-button-emoji">📄</div>
+          <div class="home-main-button-label">Hesap Bilgisi</div>
         </button>
       </div>
+    </section>
 
-      <div class="card" id="bank-info-card">
-        <h3 style="margin:0 0 6px 0;font-size:15px;">Hesap Bilgisi</h3>
-        <p style="margin:2px 0;font-size:14px;">Hesap Numaran: <strong id="bank-account-number">-</strong></p>
-        <p style="margin:2px 0;font-size:14px;">Banka Bakiyesi: <strong><span id="bank-balance">0</span> TL</strong></p>
-        <div class="card-actions">
-          <button class="btn btn-info" id="bank-copy-btn">Hesap No Kopyala</button>
-        </div>
-        <p style="margin:6px 0 0 0;font-size:12px;color:var(--text-muted);">Hesap numarası her kullanıcı için sabittir ve 11 hanedir.</p>
-      </div>
+    <!-- BANK - HAVALE & EFT -->
+    <section class="page" data-page="bank-transfer">
+      <h2 class="page-title">Havale &amp; EFT</h2>
+      <p class="hint">Göndermek istediğin 11 haneli hesap numarasını ve tutarı gir.</p>
 
       <div class="card" id="bank-transfer-card">
         <h3 style="margin:0 0 6px 0;font-size:15px;">Para Gönder</h3>
@@ -1098,11 +1074,33 @@
         </div>
         <p style="margin:6px 0 0 0;font-size:12px;color:var(--text-muted);">Transferler anlık gerçekleşir ve bakiyen düşer.</p>
       </div>
+    </section>
+
+    <!-- BANK - HAREKETLER -->
+    <section class="page" data-page="bank-history">
+      <h2 class="page-title">Hesap Hareketleri</h2>
+      <p class="hint">Giriş ve çıkışlar oyuncu adı ve ID'si ile listelenir.</p>
 
       <div class="card" id="bank-history-card">
-        <h3 style="margin:0 0 6px 0;font-size:15px;">Hesap Hareketleri</h3>
-        <p style="margin:2px 0 8px 0;font-size:13px;color:var(--text-muted);">Giriş ve çıkışlar oyuncu adı ve ID'si ile listelenir.</p>
+        <h3 style="margin:0 0 6px 0;font-size:15px;">Hareket Geçmişi</h3>
+        <p style="margin:2px 0 8px 0;font-size:13px;color:var(--text-muted);">Para çıkışı kırmızı, girişi yeşil görünür.</p>
         <div id="bank-history-list" class="bank-history-list"></div>
+      </div>
+    </section>
+
+    <!-- BANK - BİLGİLER -->
+    <section class="page" data-page="bank-info">
+      <h2 class="page-title">Hesap Bilgisi</h2>
+      <p class="hint">11 haneli hesap numaran sabittir, dilediğin zaman kopyala.</p>
+
+      <div class="card" id="bank-info-card">
+        <h3 style="margin:0 0 6px 0;font-size:15px;">Hesap Bilgisi</h3>
+        <p style="margin:2px 0;font-size:14px;">Hesap Numaran: <strong id="bank-account-number">-</strong></p>
+        <p style="margin:2px 0;font-size:14px;">Banka Bakiyesi: <strong><span id="bank-balance">0</span> TL</strong></p>
+        <div class="card-actions">
+          <button class="btn btn-info" id="bank-copy-btn">Hesap No Kopyala</button>
+        </div>
+        <p style="margin:6px 0 0 0;font-size:12px;color:var(--text-muted);">Hesap numarası her kullanıcı için sabittir ve 11 hanedir.</p>
       </div>
     </section>
 
@@ -1390,7 +1388,6 @@
   const bankSendAmountInput = document.getElementById("bank-send-amount");
   const bankSendBtn = document.getElementById("bank-send-btn");
   const bankHistoryListEl = document.getElementById("bank-history-list");
-  const bankActionButtons = document.querySelectorAll(".bank-action-button");
 
   const toastEl = document.getElementById("toast");
 
@@ -1431,7 +1428,7 @@
     if (target === "inventory") updateInventoryView();
     if (target === "bazaar") renderBazaar();
     if (target === "factory") renderFactoryView();
-    if (target === "bank") updateBankView();
+    if (target === "bank" || target.startsWith("bank-")) updateBankView();
     if (target === "profile") updateProfileView();
     if (target === "chat") renderChat();
   }
@@ -2897,19 +2894,6 @@
 
       showToast(`Gönderildi: -${amount.toLocaleString("tr-TR")} TL ✅`);
       updateBankView();
-    });
-  }
-
-  if (bankActionButtons && bankActionButtons.length > 0) {
-    bankActionButtons.forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const targetId = btn.dataset.scrollTarget;
-        if (!targetId) return;
-        const el = document.getElementById(targetId);
-        if (el) {
-          el.scrollIntoView({ behavior: "smooth", block: "start" });
-        }
-      });
     });
   }
 
