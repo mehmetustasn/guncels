@@ -669,6 +669,60 @@
       text-align: center;
     }
 
+    /* BANK */
+    .bank-actions {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .bank-main-button {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-card);
+      padding: 12px 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: transform 0.08s ease-out, border-color 0.12s ease-out;
+    }
+    .bank-main-button.active {
+      border-color: var(--btn-info);
+      transform: translateY(-1px);
+    }
+    .bank-main-button-icon { font-size: 22px; }
+    .bank-main-button-label {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .bank-panel { display: none; }
+    .bank-panel.active { display: block; }
+    .bank-history-list { display: flex; flex-direction: column; gap: 10px; }
+    .bank-history-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-card);
+      padding: 10px;
+    }
+    .bank-history-left {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 13px;
+    }
+    .bank-history-title { font-weight: 700; font-size: 14px; }
+    .bank-history-meta { color: var(--text-muted); font-size: 12px; }
+    .bank-amount-in { color: var(--btn-primary); font-weight: 800; }
+    .bank-amount-out { color: var(--btn-danger); font-weight: 800; }
+
     /* Profil sayfası */
     .profile-header {
       display: flex;
@@ -979,27 +1033,54 @@
     <!-- BANK -->
     <section class="page" data-page="bank">
       <h2 class="page-title">Banka</h2>
-      <p class="hint">11 haneli hesap numaranla oyunculara para gönder.</p>
+      <p class="hint">11 haneli Oyuncu ID'inle para gönder, hareketlerini takip et.</p>
 
-      <div class="card">
-        <h3 style="margin:0 0 6px 0;font-size:15px;">Hesap Bilgisi</h3>
-        <p style="margin:2px 0;font-size:14px;">Hesap Numaran: <strong id="bank-account-number">-</strong></p>
-        <p style="margin:2px 0;font-size:14px;">Banka Bakiyesi: <strong><span id="bank-balance">0</span> TL</strong></p>
-        <div class="card-actions">
-          <button class="btn btn-info" id="bank-copy-btn">Hesap No Kopyala</button>
-        </div>
-        <p style="margin:6px 0 0 0;font-size:12px;color:var(--text-muted);">Hesap numarası her kullanıcı için sabittir ve 11 hanedir.</p>
+      <div class="bank-actions">
+        <button class="bank-main-button active" data-panel="info">
+          <div class="bank-main-button-icon">🪪</div>
+          <div class="bank-main-button-label">Hesap Bilgisi</div>
+        </button>
+        <button class="bank-main-button" data-panel="transfer">
+          <div class="bank-main-button-icon">💸</div>
+          <div class="bank-main-button-label">Havale & EFT</div>
+        </button>
+        <button class="bank-main-button" data-panel="activity">
+          <div class="bank-main-button-icon">📜</div>
+          <div class="bank-main-button-label">Hesap Hareketleri</div>
+        </button>
       </div>
 
-      <div class="card">
-        <h3 style="margin:0 0 6px 0;font-size:15px;">Para Gönder</h3>
-        <p style="margin:2px 0;font-size:14px;">Göndermek istediğin 11 haneli hesap numarasını ve tutarı gir.</p>
-        <input id="bank-target-account" type="text" inputmode="numeric" pattern="\d*" maxlength="11" placeholder="Hedef hesap no" />
-        <input id="bank-send-amount" type="number" min="1" placeholder="Tutar (TL)" />
-        <div class="card-actions">
-          <button class="btn btn-primary" id="bank-send-btn" style="width:100%;">Gönder</button>
+      <div class="bank-panel active" data-panel="info">
+        <div class="card">
+          <h3 style="margin:0 0 6px 0;font-size:15px;">Hesap Bilgisi</h3>
+          <p style="margin:2px 0;font-size:14px;">Oyuncu ID: <strong id="bank-account-number">-</strong></p>
+          <p style="margin:2px 0;font-size:14px;">Banka Bakiyesi: <strong><span id="bank-balance">0</span> TL</strong></p>
+          <div class="card-actions">
+            <button class="btn btn-info" id="bank-copy-btn">ID'yi Kopyala</button>
+          </div>
+          <p style="margin:6px 0 0 0;font-size:12px;color:var(--text-muted);">Oyuncu ID'in sabittir ve 11 hanelidir.</p>
         </div>
-        <p style="margin:6px 0 0 0;font-size:12px;color:var(--text-muted);">Transferler anlık gerçekleşir ve bakiyen düşer.</p>
+      </div>
+
+      <div class="bank-panel" data-panel="transfer">
+        <div class="card">
+          <h3 style="margin:0 0 6px 0;font-size:15px;">Havale & EFT</h3>
+          <p style="margin:2px 0;font-size:14px;">Göndermek istediğin 11 haneli oyuncu ID'sini ve tutarı gir.</p>
+          <input id="bank-target-account" type="text" inputmode="numeric" pattern="\d*" maxlength="11" placeholder="Hedef oyuncu ID" />
+          <input id="bank-send-amount" type="number" min="1" placeholder="Tutar (TL)" />
+          <div class="card-actions">
+            <button class="btn btn-primary" id="bank-send-btn" style="width:100%;">Gönder</button>
+          </div>
+          <p style="margin:6px 0 0 0;font-size:12px;color:var(--text-muted);">Kendine para gönderemezsin, transferler anlık gerçekleşir.</p>
+        </div>
+      </div>
+
+      <div class="bank-panel" data-panel="activity">
+        <div class="card">
+          <h3 style="margin:0 0 6px 0;font-size:15px;">Hesap Hareketleri</h3>
+          <p style="margin:2px 0 8px 0;font-size:13px;color:var(--text-muted);">Gönderilen ve alınan tüm transferlerin burada listelenir.</p>
+          <div id="bank-history-list" class="bank-history-list"></div>
+        </div>
       </div>
     </section>
 
@@ -1038,11 +1119,12 @@
   <div class="card">
     <div class="profile-header">
       <img id="profile-avatar" class="profile-avatar-large" alt="Profil Avatarı" />
-      <div class="profile-meta">
-        <div><strong id="profile-username"></strong></div>
-        <div class="muted-label">Nakit: <span id="profile-coins">0</span> TL</div>
-        <div class="muted-label">Süt: <span id="profile-milk">0</span> L | Kaçak: <span id="profile-contraband">0</span></div>
-      </div>
+        <div class="profile-meta">
+          <div><strong id="profile-username"></strong></div>
+          <div class="muted-label">Oyuncu ID: <span id="profile-player-id">-</span></div>
+          <div class="muted-label">Nakit: <span id="profile-coins">0</span> TL</div>
+          <div class="muted-label">Süt: <span id="profile-milk">0</span> L | Kaçak: <span id="profile-contraband">0</span></div>
+        </div>
     </div>
     <div class="card-actions" style="margin-top:12px;">
       <button class="btn btn-info" id="edit-avatar-btn" style="width:100%;">Avatarı Düzenle</button>
@@ -1182,7 +1264,7 @@
     { name: "Montofon", weight: 80 },
   ];
 
-  const ACCOUNT_NUMBER_LENGTH = 11;
+  const PLAYER_ID_LENGTH = 11;
 
   // ==========================
   // GLOBAL STATE
@@ -1269,6 +1351,7 @@
 
   const profileAvatarEl = document.getElementById("profile-avatar");
   const profileUsernameEl = document.getElementById("profile-username");
+  const profilePlayerIdEl = document.getElementById("profile-player-id");
   const profileCoinsEl = document.getElementById("profile-coins");
   const profileMilkEl = document.getElementById("profile-milk");
   const profileContrabandEl = document.getElementById("profile-contraband");
@@ -1286,6 +1369,9 @@
   const bankTargetAccountInput = document.getElementById("bank-target-account");
   const bankSendAmountInput = document.getElementById("bank-send-amount");
   const bankSendBtn = document.getElementById("bank-send-btn");
+  const bankPanelButtons = document.querySelectorAll(".bank-main-button");
+  const bankPanels = document.querySelectorAll(".bank-panel");
+  const bankHistoryListEl = document.getElementById("bank-history-list");
 
   const toastEl = document.getElementById("toast");
 
@@ -1326,7 +1412,10 @@
     if (target === "inventory") updateInventoryView();
     if (target === "bazaar") renderBazaar();
     if (target === "factory") renderFactoryView();
-    if (target === "bank") updateBankView();
+    if (target === "bank") {
+      updateBankView();
+      renderBankHistory();
+    }
     if (target === "profile") updateProfileView();
     if (target === "chat") renderChat();
   }
@@ -1342,45 +1431,52 @@
     } catch {
       accounts = {};
     }
-    ensureAccountNumbersForAll();
+    ensurePlayerIdsForAll();
   }
 
   function saveAccounts() {
     localStorage.setItem(AUTH_KEYS.accounts, JSON.stringify(accounts));
   }
 
-  function generateUniqueAccountNumber(usedSet) {
-    const used = usedSet || new Set(Object.values(accounts || {}).map((acc) => acc.accountNumber).filter(Boolean));
+  function generateUniquePlayerId(usedSet) {
+    const used =
+      usedSet ||
+      new Set(Object.values(accounts || {}).map((acc) => acc && (acc.playerId || acc.accountNumber)).filter(Boolean));
     let number;
     do {
-      number = Math.floor(10 ** (ACCOUNT_NUMBER_LENGTH - 1) + Math.random() * 9 * 10 ** (ACCOUNT_NUMBER_LENGTH - 1)).toString();
+      number = Math.floor(10 ** (PLAYER_ID_LENGTH - 1) + Math.random() * 9 * 10 ** (PLAYER_ID_LENGTH - 1)).toString();
     } while (used.has(number));
     used.add(number);
     return number;
   }
 
-  function ensureAccountNumbersForAll() {
+  function ensurePlayerIdsForAll() {
     const used = new Set();
     Object.values(accounts || {}).forEach((acc) => {
       if (!acc) return;
-      if (!acc.accountNumber || used.has(acc.accountNumber)) {
-        acc.accountNumber = generateUniqueAccountNumber(used);
+      if (!acc.playerId && acc.accountNumber) acc.playerId = acc.accountNumber;
+      if (!acc.playerId || used.has(acc.playerId)) {
+        acc.playerId = generateUniquePlayerId(used);
       }
-      used.add(acc.accountNumber);
+      if (!Array.isArray(acc.bankHistory)) acc.bankHistory = [];
+      used.add(acc.playerId);
     });
     saveAccounts();
   }
 
-  function ensureCurrentAccountNumber() {
+  function ensureCurrentPlayerId() {
     if (!currentAccount) return;
     const used = new Set(
       Object.values(accounts || {})
         .filter((acc) => acc && acc !== currentAccount)
-        .map((acc) => acc.accountNumber)
+        .map((acc) => acc.playerId || acc.accountNumber)
         .filter(Boolean)
     );
-    if (!currentAccount.accountNumber || used.has(currentAccount.accountNumber)) {
-      currentAccount.accountNumber = generateUniqueAccountNumber(used);
+    if (!currentAccount.playerId && currentAccount.accountNumber) {
+      currentAccount.playerId = currentAccount.accountNumber;
+    }
+    if (!currentAccount.playerId || used.has(currentAccount.playerId)) {
+      currentAccount.playerId = generateUniquePlayerId(used);
       saveAccounts();
     }
   }
@@ -1462,7 +1558,8 @@
       family: "Yok",
       district: "Belirtilmemiş",
       avatar: AVATAR_CHOICES[0]?.id || "rebel",
-      accountNumber: generateUniqueAccountNumber(),
+      playerId: generateUniquePlayerId(),
+      bankHistory: [],
     };
   }
 
@@ -1492,7 +1589,9 @@
 
     if (!currentAccount.avatar) currentAccount.avatar = AVATAR_CHOICES[0]?.id || "rebel";
 
-    ensureCurrentAccountNumber();
+    if (!Array.isArray(currentAccount.bankHistory)) currentAccount.bankHistory = [];
+
+    ensureCurrentPlayerId();
     saveAccounts();
   }
 
@@ -1557,8 +1656,25 @@
     });
   }
 
-  function findAccountByNumber(number) {
-    return Object.values(accounts || {}).find((acc) => acc && acc.accountNumber === number);
+  function findAccountByPlayerId(id) {
+    return Object.values(accounts || {}).find((acc) => acc && (acc.playerId || acc.accountNumber) === id);
+  }
+
+  function addBankHistory(account, entry) {
+    if (!account) return;
+    if (!Array.isArray(account.bankHistory)) account.bankHistory = [];
+    account.bankHistory.push(entry);
+    account.bankHistory = account.bankHistory.slice(-80);
+  }
+
+  function formatBankTime(ts) {
+    return new Date(ts).toLocaleString("tr-TR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   }
 
   // ==========================
@@ -1699,6 +1815,7 @@
     if (!currentAccount) return;
     currentAccount.coins = currentCoins;
     saveAccounts();
+    updateBankView();
   }
 
   function loadMilk() {
@@ -2453,6 +2570,7 @@
   function updateProfileView() {
     if (!currentAccount) return;
     if (profileUsernameEl) profileUsernameEl.textContent = currentAccount.username;
+    if (profilePlayerIdEl) profilePlayerIdEl.textContent = currentAccount.playerId;
     if (profileCoinsEl) profileCoinsEl.textContent = currentAccount.coins || 0;
     if (profileMilkEl) profileMilkEl.textContent = currentAccount.milk || 0;
     if (profileContrabandEl) profileContrabandEl.textContent = currentAccount.contraband || 0;
@@ -2581,6 +2699,78 @@
   // ==========================
   // BANKA
   // ==========================
+  function setBankPanel(target) {
+    bankPanels.forEach((panel) => {
+      panel.classList.toggle("active", panel.dataset.panel === target);
+    });
+    bankPanelButtons.forEach((btn) => {
+      btn.classList.toggle("active", btn.dataset.panel === target);
+    });
+    if (target === "activity") renderBankHistory();
+    if (target === "info") updateBankView();
+  }
+
+  function renderBankHistory() {
+    if (!bankHistoryListEl) return;
+    bankHistoryListEl.innerHTML = "";
+
+    if (!currentAccount) {
+      const empty = document.createElement("div");
+      empty.className = "bank-history-item";
+      empty.innerHTML = "<span>Giriş yap, hareketlerini gör.</span>";
+      bankHistoryListEl.appendChild(empty);
+      return;
+    }
+
+    const items = (currentAccount.bankHistory || [])
+      .slice()
+      .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+
+    if (items.length === 0) {
+      const empty = document.createElement("div");
+      empty.className = "bank-history-item";
+      empty.innerHTML = "<span>Henüz hareket yok.</span>";
+      bankHistoryListEl.appendChild(empty);
+      return;
+    }
+
+    items.forEach((entry) => {
+      const row = document.createElement("div");
+      row.className = "bank-history-item";
+
+      const left = document.createElement("div");
+      left.className = "bank-history-left";
+
+      const title = document.createElement("div");
+      title.className = "bank-history-title";
+      title.textContent = entry.type === "out" ? "Gönderildi" : "Alındı";
+
+      const meta1 = document.createElement("div");
+      meta1.className = "bank-history-meta";
+      const counterpartName = entry.counterpartyName || "Bilinmeyen";
+      const counterpartId = entry.counterpartyId || "-";
+      meta1.textContent = `Oyuncu: ${counterpartName} (${counterpartId})`;
+
+      const meta2 = document.createElement("div");
+      meta2.className = "bank-history-meta";
+      meta2.textContent = formatBankTime(entry.createdAt || Date.now());
+
+      left.appendChild(title);
+      left.appendChild(meta1);
+      left.appendChild(meta2);
+
+      const right = document.createElement("div");
+      right.className = entry.type === "out" ? "bank-amount-out" : "bank-amount-in";
+      const sign = entry.type === "out" ? "-" : "+";
+      right.textContent = `${sign}${(entry.amount || 0).toLocaleString("tr-TR")} TL`;
+
+      row.appendChild(left);
+      row.appendChild(right);
+
+      bankHistoryListEl.appendChild(row);
+    });
+  }
+
   function updateBankView() {
     if (!bankAccountNumberEl || !bankBalanceEl) return;
 
@@ -2594,8 +2784,8 @@
       return;
     }
 
-    ensureCurrentAccountNumber();
-    bankAccountNumberEl.textContent = currentAccount.accountNumber;
+    ensureCurrentPlayerId();
+    bankAccountNumberEl.textContent = currentAccount.playerId;
     bankBalanceEl.textContent = currentCoins;
 
     if (bankCopyBtn) {
@@ -2604,10 +2794,19 @@
     }
   }
 
+  if (bankPanelButtons.length) {
+    bankPanelButtons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const target = btn.dataset.panel || "info";
+        setBankPanel(target);
+      });
+    });
+  }
+
   if (bankCopyBtn) {
     bankCopyBtn.addEventListener("click", () => {
       if (!requireAccount()) return;
-      const number = currentAccount.accountNumber;
+      const number = currentAccount.playerId;
       if (!number) return;
 
       if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -2638,7 +2837,7 @@
         showToast("Hesap numarası 11 haneli olmalı.");
         return;
       }
-      const targetAccount = findAccountByNumber(target);
+      const targetAccount = findAccountByPlayerId(target);
       if (!targetAccount) {
         showToast("Hedef hesap bulunamadı ❌");
         return;
@@ -2662,12 +2861,32 @@
       updateInventoryView();
 
       targetAccount.coins = (targetAccount.coins || 0) + amount;
+      const now = Date.now();
+      addBankHistory(currentAccount, {
+        id: `${now}_${Math.random()}`,
+        type: "out",
+        amount,
+        counterpartyId: targetAccount.playerId || targetAccount.accountNumber,
+        counterpartyName: targetAccount.username,
+        createdAt: now,
+      });
+
+      addBankHistory(targetAccount, {
+        id: `${now}_${Math.random()}`,
+        type: "in",
+        amount,
+        counterpartyId: currentAccount.playerId,
+        counterpartyName: currentAccount.username,
+        createdAt: now,
+      });
+
       saveAccounts();
 
       bankSendAmountInput.value = "";
       bankTargetAccountInput.value = "";
 
       showToast(`Gönderildi: -${amount.toLocaleString("tr-TR")} TL ✅`);
+      renderBankHistory();
     });
   }
 
@@ -2723,6 +2942,7 @@
     renderBazaar();
     renderFactoryView();
     updateBankView();
+    setBankPanel("info");
     showPage("home");
   }
 
