@@ -423,6 +423,34 @@
       transform: none !important;
     }
 
+    .full-input {
+      width: 100%;
+      padding: 10px 12px;
+      margin: 6px 0;
+      border-radius: 0;
+      border: 1px solid var(--card-border);
+      background: var(--bg-body);
+      color: var(--text-main);
+      font-size: 14px;
+    }
+    .history-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .history-item {
+      border: 1px solid var(--card-border);
+      padding: 10px;
+      border-radius: var(--radius-card);
+      background: var(--bg-body);
+      font-size: 14px;
+    }
+    .history-item .meta {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
     /* BOTTOM NAV – sadece Ana, Sohbet, Ayarlar */
     .bottom-nav {
       position: fixed;
@@ -998,12 +1026,47 @@
       </div>
 
       <div class="card">
-        <h3 style="margin:0 0 6px 0;font-size:15px;">Para Gönder</h3>
-        <p style="margin:2px 0;font-size:14px;">Göndermek istediğin 11 haneli hesap numarasını ve tutarı gir.</p>
-        <div class="card-actions">
-          <button class="btn btn-primary" id="bank-open-send" style="width:100%;">Gönder</button>
+        <h3 style="margin:0 0 6px 0;font-size:15px;">İşlemler</h3>
+        <div class="card-actions" style="flex-direction:column; gap:8px;">
+          <button class="btn btn-primary" id="bank-go-transfer" style="width:100%;">Havale & EFT</button>
+          <button class="btn btn-secondary" id="bank-go-history" style="width:100%;">Hesap Hareketleri</button>
         </div>
-        <p style="margin:6px 0 0 0;font-size:12px;color:var(--text-muted);">Transferler anlık gerçekleşir ve bakiyen düşer.</p>
+        <p style="margin:6px 0 0 0;font-size:12px;color:var(--text-muted);">Butona dokununca tam ekran işlem sayfası açılır.</p>
+      </div>
+    </section>
+
+    <!-- BANK TRANSFER PAGE -->
+    <section class="page" data-page="bank-transfer">
+      <h2 class="page-title">Havale & EFT</h2>
+      <p class="hint">11 haneli hesap numarası ve tutarı gir. İşlem tam ekran yapılır.</p>
+
+      <div class="card">
+        <p style="margin:2px 0;font-size:14px;">Hesap No: <strong id="bank-transfer-account">-</strong></p>
+        <p style="margin:2px 0;font-size:14px;">Bakiye: <strong><span id="bank-transfer-balance">0</span> TL</strong></p>
+      </div>
+
+      <div class="card">
+        <h3 style="margin:0 0 6px 0;font-size:15px;">Para Gönder</h3>
+        <p style="margin:2px 0;font-size:14px;">Hedef hesap numarasını ve tutarı yaz.</p>
+        <input id="bank-transfer-target" type="text" inputmode="numeric" pattern="\d*" maxlength="11" placeholder="Hedef hesap no" class="full-input" />
+        <input id="bank-transfer-amount" type="number" min="1" placeholder="Tutar (TL)" class="full-input" />
+        <div class="card-actions" style="margin-top:10px;">
+          <button class="btn btn-secondary" id="bank-transfer-back" style="flex:1;">Bankaya Dön</button>
+          <button class="btn btn-primary" id="bank-transfer-submit" style="flex:1;">Gönder</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- BANK HISTORY PAGE -->
+    <section class="page" data-page="bank-history">
+      <h2 class="page-title">Hesap Hareketleri</h2>
+      <p class="hint">Son transferlerin burada listelenir.</p>
+
+      <div class="card">
+        <div class="card-actions" style="margin-bottom:10px;">
+          <button class="btn btn-secondary" id="bank-history-back" style="width:100%;">Bankaya Dön</button>
+        </div>
+        <div id="bank-history-list" class="history-list"></div>
       </div>
     </section>
 
@@ -1078,22 +1141,6 @@
       <div class="dialog-actions">
         <button class="btn btn-secondary" id="cancel-buy">İptal</button>
         <button class="btn btn-primary" id="confirm-buy">Satın Al</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- BANK SEND POPUP -->
-  <div class="overlay" id="bank-send-overlay">
-    <div class="dialog">
-      <div class="dialog-title">Para Gönder</div>
-      <div class="dialog-body">
-        11 haneli hesap numarasını ve göndereceğin tutarı gir.
-        <input id="bank-target-account" type="text" inputmode="numeric" pattern="\d*" maxlength="11" placeholder="Hedef hesap no" />
-        <input id="bank-send-amount" type="number" min="1" placeholder="Tutar (TL)" />
-      </div>
-      <div class="dialog-actions">
-        <button class="btn btn-secondary" id="bank-send-cancel">İptal</button>
-        <button class="btn btn-primary" id="bank-send-btn">Gönder</button>
       </div>
     </div>
   </div>
@@ -1303,12 +1350,16 @@
   const bankAccountNumberEl = document.getElementById("bank-account-number");
   const bankBalanceEl = document.getElementById("bank-balance");
   const bankCopyBtn = document.getElementById("bank-copy-btn");
-  const bankOpenSendBtn = document.getElementById("bank-open-send");
-  const bankSendOverlay = document.getElementById("bank-send-overlay");
-  const bankTargetAccountInput = document.getElementById("bank-target-account");
-  const bankSendAmountInput = document.getElementById("bank-send-amount");
-  const bankSendBtn = document.getElementById("bank-send-btn");
-  const bankSendCancelBtn = document.getElementById("bank-send-cancel");
+  const bankGoTransferBtn = document.getElementById("bank-go-transfer");
+  const bankGoHistoryBtn = document.getElementById("bank-go-history");
+  const bankTransferAccountEl = document.getElementById("bank-transfer-account");
+  const bankTransferBalanceEl = document.getElementById("bank-transfer-balance");
+  const bankTransferTargetInput = document.getElementById("bank-transfer-target");
+  const bankTransferAmountInput = document.getElementById("bank-transfer-amount");
+  const bankTransferSubmitBtn = document.getElementById("bank-transfer-submit");
+  const bankTransferBackBtn = document.getElementById("bank-transfer-back");
+  const bankHistoryBackBtn = document.getElementById("bank-history-back");
+  const bankHistoryListEl = document.getElementById("bank-history-list");
 
   const toastEl = document.getElementById("toast");
 
@@ -1354,7 +1405,8 @@
     if (target === "inventory") updateInventoryView();
     if (target === "bazaar") renderBazaar();
     if (target === "factory") renderFactoryView();
-    if (target === "bank") updateBankView();
+    if (target === "bank" || target === "bank-transfer") updateBankView();
+    if (target === "bank-history") renderBankHistory();
     if (target === "profile") updateProfileView();
     if (target === "chat") renderChat();
   }
@@ -1391,6 +1443,7 @@
     const used = new Set();
     Object.values(accounts || {}).forEach((acc) => {
       if (!acc) return;
+      if (!Array.isArray(acc.bankHistory)) acc.bankHistory = [];
       if (!acc.accountNumber || used.has(acc.accountNumber)) {
         acc.accountNumber = generateUniqueAccountNumber(used);
       }
@@ -1491,6 +1544,7 @@
       district: "Belirtilmemiş",
       avatar: AVATAR_CHOICES[0]?.id || "rebel",
       accountNumber: generateUniqueAccountNumber(),
+      bankHistory: [],
     };
   }
 
@@ -1519,6 +1573,7 @@
     if (!currentAccount.district) currentAccount.district = "Belirtilmemiş";
 
     if (!currentAccount.avatar) currentAccount.avatar = AVATAR_CHOICES[0]?.id || "rebel";
+    if (!Array.isArray(currentAccount.bankHistory)) currentAccount.bankHistory = [];
 
     ensureCurrentAccountNumber();
     saveAccounts();
@@ -1754,6 +1809,15 @@
 
   function randomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+
+  function formatTime(ts) {
+    const d = new Date(ts);
+    const dd = d.getDate().toString().padStart(2, "0");
+    const mm = (d.getMonth() + 1).toString().padStart(2, "0");
+    const hh = d.getHours().toString().padStart(2, "0");
+    const min = d.getMinutes().toString().padStart(2, "0");
+    return `${dd}.${mm} ${hh}:${min}`;
   }
 
   // ==========================
@@ -2615,13 +2679,11 @@
     if (!currentAccount) {
       bankAccountNumberEl.textContent = "-";
       bankBalanceEl.textContent = "0";
+      if (bankTransferAccountEl) bankTransferAccountEl.textContent = "-";
+      if (bankTransferBalanceEl) bankTransferBalanceEl.textContent = "0";
       if (bankCopyBtn) {
         bankCopyBtn.disabled = true;
         bankCopyBtn.classList.add("btn-disabled");
-      }
-      if (bankOpenSendBtn) {
-        bankOpenSendBtn.disabled = true;
-        bankOpenSendBtn.classList.add("btn-disabled");
       }
       return;
     }
@@ -2629,16 +2691,98 @@
     ensureCurrentAccountNumber();
     bankAccountNumberEl.textContent = currentAccount.accountNumber;
     bankBalanceEl.textContent = currentCoins;
+    if (coinAmountEl) coinAmountEl.textContent = currentCoins;
+    if (bankTransferAccountEl) bankTransferAccountEl.textContent = currentAccount.accountNumber;
+    if (bankTransferBalanceEl) bankTransferBalanceEl.textContent = currentCoins;
 
     if (bankCopyBtn) {
       bankCopyBtn.disabled = false;
       bankCopyBtn.classList.remove("btn-disabled");
     }
 
-    if (bankOpenSendBtn) {
-      bankOpenSendBtn.disabled = currentCoins <= 0;
-      bankOpenSendBtn.classList.toggle("btn-disabled", currentCoins <= 0);
+    if (bankGoTransferBtn) {
+      bankGoTransferBtn.disabled = currentCoins <= 0;
+      bankGoTransferBtn.classList.toggle("btn-disabled", currentCoins <= 0);
     }
+  }
+
+  function addBankHistory(account, entry) {
+    if (!account.bankHistory) account.bankHistory = [];
+    account.bankHistory.unshift({ id: `${Date.now()}_${Math.random()}`, ...entry });
+    if (account.bankHistory.length > 30) {
+      account.bankHistory = account.bankHistory.slice(0, 30);
+    }
+  }
+
+  function renderBankHistory() {
+    if (!bankHistoryListEl) return;
+    bankHistoryListEl.innerHTML = "";
+
+    if (!currentAccount || !currentAccount.bankHistory || currentAccount.bankHistory.length === 0) {
+      bankHistoryListEl.innerHTML =
+        "<div class='history-item'>Henüz hareket yok.</div>";
+      return;
+    }
+
+    currentAccount.bankHistory.forEach((item) => {
+      const div = document.createElement("div");
+      div.className = "history-item";
+      const isOut = item.type === "out";
+      const counterpart = isOut ? item.to : item.from;
+      div.innerHTML =
+        `<strong>${isOut ? "Gönderildi" : "Geldi"}: ${item.amount.toLocaleString("tr-TR")} TL</strong><br>` +
+        `${isOut ? "Alıcı" : "Gönderen"}: ${counterpart || "-"}` +
+        `<div class="meta">${formatTime(item.time)}</div>`;
+      bankHistoryListEl.appendChild(div);
+    });
+  }
+
+  function performTransfer(targetNumber, amount) {
+    if (!requireAccount()) return false;
+
+    const targetAccount = findAccountByNumber(targetNumber);
+    if (!targetAccount) {
+      showToast("Hedef hesap bulunamadı ❌", "error");
+      return false;
+    }
+    if (targetAccount === currentAccount) {
+      showToast("Kendine para gönderemezsin.", "error");
+      return false;
+    }
+    if (isNaN(amount) || amount <= 0) {
+      showToast("Geçerli bir tutar gir.", "error");
+      return false;
+    }
+    if (amount > currentCoins) {
+      showToast("Yetersiz bakiye ❌", "error");
+      return false;
+    }
+
+    currentCoins -= amount;
+    saveCoins();
+    updateInventoryView();
+    updateBankView();
+    updateProfileView();
+
+    targetAccount.coins = (targetAccount.coins || 0) + amount;
+
+    addBankHistory(currentAccount, {
+      type: "out",
+      amount,
+      to: targetAccount.accountNumber,
+      time: Date.now(),
+    });
+    addBankHistory(targetAccount, {
+      type: "in",
+      amount,
+      from: currentAccount.accountNumber,
+      time: Date.now(),
+    });
+
+    saveAccounts();
+    renderBankHistory();
+    showToast(`Gönderildi: -${amount.toLocaleString("tr-TR")} TL ✅`);
+    return true;
   }
 
   if (bankCopyBtn) {
@@ -2664,68 +2808,49 @@
     });
   }
 
-  if (bankOpenSendBtn) {
-    bankOpenSendBtn.addEventListener("click", () => {
+  if (bankGoTransferBtn) {
+    bankGoTransferBtn.addEventListener("click", () => {
       if (!requireAccount()) return;
-      bankTargetAccountInput.value = "";
-      bankSendAmountInput.value = "";
-      bankSendOverlay.classList.add("active");
+      showPage("bank-transfer");
+      updateBankView();
+      bankTransferTargetInput.value = "";
+      bankTransferAmountInput.value = "";
     });
   }
 
-  if (bankSendCancelBtn && bankSendOverlay) {
-    bankSendCancelBtn.addEventListener("click", () => {
-      bankSendOverlay.classList.remove("active");
-    });
-
-    bankSendOverlay.addEventListener("click", (e) => {
-      if (e.target === bankSendOverlay) bankSendOverlay.classList.remove("active");
+  if (bankGoHistoryBtn) {
+    bankGoHistoryBtn.addEventListener("click", () => {
+      if (!requireAccount()) return;
+      showPage("bank-history");
+      renderBankHistory();
     });
   }
 
-  if (bankSendBtn) {
-    bankSendBtn.addEventListener("click", () => {
-      if (!requireAccount()) return;
+  if (bankTransferBackBtn) {
+    bankTransferBackBtn.addEventListener("click", () => showPage("bank"));
+  }
 
-      const target = (bankTargetAccountInput.value || "").trim();
-      const amount = parseInt(bankSendAmountInput.value, 10);
+  if (bankHistoryBackBtn) {
+    bankHistoryBackBtn.addEventListener("click", () => showPage("bank"));
+  }
+
+  if (bankTransferSubmitBtn) {
+    bankTransferSubmitBtn.addEventListener("click", () => {
+      if (!requireAccount()) return;
+      const target = (bankTransferTargetInput.value || "").trim();
+      const amount = parseInt(bankTransferAmountInput.value, 10);
 
       if (!/^\d{11}$/.test(target)) {
         showToast("Hesap numarası 11 haneli olmalı.", "error");
         return;
       }
-      const targetAccount = findAccountByNumber(target);
-      if (!targetAccount) {
-        showToast("Hedef hesap bulunamadı ❌", "error");
-        return;
+
+      const ok = performTransfer(target, amount);
+      if (ok) {
+        bankTransferTargetInput.value = "";
+        bankTransferAmountInput.value = "";
+        updateBankView();
       }
-      if (targetAccount === currentAccount) {
-        showToast("Kendine para gönderemezsin.", "error");
-        return;
-      }
-
-      if (isNaN(amount) || amount <= 0) {
-        showToast("Geçerli bir tutar gir.", "error");
-        return;
-      }
-      if (amount > currentCoins) {
-        showToast("Yetersiz bakiye ❌", "error");
-        return;
-      }
-
-      currentCoins -= amount;
-      saveCoins();
-      updateInventoryView();
-      updateBankView();
-
-      targetAccount.coins = (targetAccount.coins || 0) + amount;
-      saveAccounts();
-
-      bankSendAmountInput.value = "";
-      bankTargetAccountInput.value = "";
-
-      bankSendOverlay.classList.remove("active");
-      showToast(`Gönderildi: -${amount.toLocaleString("tr-TR")} TL ✅`);
     });
   }
 
