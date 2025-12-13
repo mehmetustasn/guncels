@@ -1,0 +1,2935 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Mafya Ticaret Oyunu</title>
+  <style>
+    :root {
+      --radius-card: 0px;   /* keskin kart köşesi */
+      --radius-btn: 0px;    /* keskin buton köşesi */
+      --transition-fast: 0.18s ease-out;
+    }
+
+    /* MODLAR */
+    body.mode-dark {
+      --bg-body: #000000;       /* saf siyah */
+      --bg-top: #000000;
+      --bg-bottom: #000000;
+
+      --card-bg: #0d0d0d;       /* koyu gri-siyah kart */
+      --card-border: #1a1a1a;   /* düzgün koyu border */
+
+      --text-main: #f2f2f2;     /* hafif kırık beyaz */
+      --text-muted: #9a9a9a;    /* gri */
+      --text-soft: #6e6e6e;     /* daha sönük gri */
+
+      --pill-bg: #0d0d0d;
+      --pill-border: #1f1f1f;
+
+      --btn-primary: #22c55e;
+      --btn-primary-dark: #16a34a;
+
+      --btn-danger: #ef4444;
+      --btn-danger-dark: #b91c1c;
+
+      --btn-info: #3b82f6;
+      --btn-info-dark: #1d4ed8;
+
+      --divider: #1a1a1a;
+    }
+
+    body.mode-light {
+      --bg-body: #f3f4f6;
+      --bg-top: #ffffff;
+      --bg-bottom: #ffffff;
+
+      --card-bg: #ffffff;
+      --card-border: #e5e7eb;
+
+      --text-main: #111827;
+      --text-muted: #6b7280;
+      --text-soft: #9ca3af;
+
+      --pill-bg: #f9fafb;
+      --pill-border: #e5e7eb;
+
+      --btn-primary: #16a34a;
+      --btn-primary-dark: #15803d;
+
+      --btn-danger: #dc2626;
+      --btn-danger-dark: #b91c1c;
+
+      --btn-info: #2563eb;
+      --btn-info-dark: #1d4ed8;
+
+      --divider: #e5e7eb;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
+    }
+
+    body {
+      background: var(--bg-body);
+      color: var(--text-main);
+      min-height: 100%;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+      overflow-y: auto;
+      font-size: 16px;
+    }
+
+    /* AUTH OVERLAY */
+    .auth-overlay {
+      position: fixed;
+      inset: 0;
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+    }
+    .auth-overlay.hidden { display: none; }
+
+    .auth-card {
+      width: 90%;
+      max-width: 360px;
+      background: #050816;
+      border-radius: 0;
+      padding: 16px 14px 12px;
+      border: 1px solid #111827;
+      color: #f9fafb;
+    }
+    .auth-card h2 {
+      margin: 0 0 8px 0;
+      text-align: center;
+      font-size: 22px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+    }
+
+    .auth-tabs {
+      display: flex;
+      margin-bottom: 10px;
+      background: #020617;
+      border-radius: 0;
+      padding: 3px;
+      border: 1px solid #111827;
+    }
+    .auth-tab {
+      flex: 1;
+      border: none;
+      background: transparent;
+      padding: 8px 0;
+      font-size: 14px;
+      cursor: pointer;
+      border-radius: 0;
+      color: #9ca3af;
+      font-weight: 500;
+    }
+    .auth-tab.active {
+      background: #020617;
+      color: #22c55e;
+    }
+
+    .auth-forms { margin-bottom: 10px; }
+    .auth-form { display: none; }
+    .auth-form.active { display: block; }
+
+    .auth-form input {
+      width: 100%;
+      padding: 10px 12px;
+      margin-bottom: 10px;
+      border-radius: 0;
+      border: 1px solid #111827;
+      background: #020617;
+      color: #f9fafb;
+      font-size: 15px;
+    }
+    .auth-form input::placeholder { color: #6b7280; }
+
+    .auth-form button {
+      width: 100%;
+      padding: 10px;
+      border-radius: 0;
+      border: none;
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      color: #ffffff;
+      font-weight: 600;
+      font-size: 15px;
+      cursor: pointer;
+    }
+    .auth-form button:active {
+      transform: translateY(1px);
+    }
+
+    .guest-area {
+      border-top: 1px dashed #111827;
+      padding-top: 10px;
+      margin-top: 8px;
+      text-align: center;
+    }
+    .guest-area button {
+      width: 100%;
+      padding: 10px;
+      border-radius: 0;
+      border: none;
+      background: linear-gradient(135deg, #3b82f6, #0ea5e9);
+      color: #eff6ff;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .guest-area button:active {
+      transform: translateY(1px);
+    }
+
+    .auth-error {
+      margin-top: 4px;
+      min-height: 16px;
+      font-size: 13px;
+      color: #f97373;
+      text-align: center;
+    }
+
+    /* TOAST */
+    .toast {
+      position: fixed;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 8px 16px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity var(--transition-fast), transform var(--transition-fast);
+      z-index: 50;
+    }
+    .toast-success {
+      background: #22c55e;
+      color: #022c22;
+    }
+    .toast-error {
+      background: #ef4444;
+      color: #fff2f2;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(4px);
+    }
+
+    /* TOP BAR */
+    .top-bar {
+      padding: 10px 14px;
+      background: var(--bg-top);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--divider);
+      z-index: 2;
+    }
+    .logo {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .top-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 2px;
+      font-size: 14px;
+    }
+    .top-row {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .pill {
+      font-size: 12px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--pill-border);
+      background: var(--pill-bg);
+      color: var(--text-muted);
+    }
+    #coin-amount, #milk-amount, #cow-count, #contraband-amount {
+      font-weight: 700;
+      min-width: 40px;
+      text-align: right;
+    }
+
+    .mode-toggle {
+      font-size: 18px;
+      cursor: pointer;
+      margin-left: 6px;
+      user-select: none;
+    }
+
+    /* sadece ilk satır (Nakit) gözüksün, diğerleri gizli */
+    .top-right .top-row:nth-child(n+2) {
+      display: none;
+    }
+
+    .back-btn {
+      border: 1px solid var(--card-border);
+      background: var(--card-bg);
+      border-radius: 999px;
+      padding: 4px 8px;
+      font-size: 14px;
+      margin-left: 6px;
+      cursor: pointer;
+      display: none; /* JS ile değişiyor */
+    }
+    .back-btn:active {
+      transform: translateY(1px);
+    }
+
+    /* CONTENT */
+    .content {
+      flex: 1;
+      padding: 14px 10px 90px;
+      overflow-y: auto;
+    }
+    .page { display: none; }
+    .page.active { display: block; }
+
+    .page-title {
+      margin: 0 0 6px 2px;
+      font-size: 21px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .hint {
+      margin: 0 0 10px 2px;
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--radius-card);
+      padding: 12px;
+      margin-bottom: 12px;
+      border: 1px solid var(--card-border);
+    }
+    .card-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .card-img {
+      width: 60px;
+      height: 60px;
+      border-radius: 0;
+      background: #111827;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      flex-shrink: 0;
+    }
+    .card-info h3 {
+      margin: 0 0 4px 0;
+      font-size: 17px;
+    }
+    .card-info p {
+      margin: 2px 0;
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+    .card-actions {
+      margin-top: 10px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .card input[type="text"],
+    .card input[type="number"] {
+      width: 100%;
+      padding: 9px 10px;
+      border-radius: 0;
+      border: 1px solid var(--card-border);
+      background: var(--bg-body);
+      color: var(--text-main);
+      font-size: 14px;
+      margin-top: 6px;
+    }
+    .card input::placeholder {
+      color: var(--text-soft);
+    }
+
+    .btn {
+      border: none;
+      border-radius: var(--radius-btn);
+      padding: 9px 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      white-space: nowrap;
+      transition: background 0.1s ease-out, transform 0.08s ease-out;
+      color: #ffffff;
+    }
+    .btn-primary {
+      background: var(--btn-primary);
+    }
+    .btn-primary:active {
+      background: var(--btn-primary-dark);
+      transform: translateY(1px);
+    }
+    .btn-danger {
+      background: var(--btn-danger);
+    }
+    .btn-danger:active {
+      background: var(--btn-danger-dark);
+      transform: translateY(1px);
+    }
+    .btn-info {
+      background: var(--btn-info);
+    }
+    .btn-info:active {
+      background: var(--btn-info-dark);
+      transform: translateY(1px);
+    }
+    .btn-secondary {
+      background: transparent;
+      color: var(--text-main);
+      border: 1px solid var(--card-border);
+    }
+    .btn-secondary:active {
+      transform: translateY(1px);
+    }
+    .btn-disabled {
+      background: #9ca3af !important;
+      color: #111827 !important;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+
+    .full-input {
+      width: 100%;
+      padding: 10px 12px;
+      margin: 6px 0;
+      border-radius: 0;
+      border: 1px solid var(--card-border);
+      background: var(--bg-body);
+      color: var(--text-main);
+      font-size: 14px;
+    }
+    .history-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .history-item {
+      border: 1px solid var(--card-border);
+      padding: 10px;
+      border-radius: var(--radius-card);
+      background: var(--bg-body);
+      font-size: 14px;
+    }
+    .history-item .meta {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* BOTTOM NAV – sadece Ana, Sohbet, Ayarlar */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: var(--bg-bottom);
+      display: flex;
+      justify-content: space-around;
+      padding: 8px 0 10px;
+      border-top: 1px solid var(--divider);
+      z-index: 5;
+    }
+    .bottom-nav button {
+      background: transparent;
+      border: none;
+      color: var(--text-soft);
+      font-size: 22px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: background 0.12s, transform 0.08s, color 0.12s;
+    }
+    .bottom-nav button.active {
+      background: var(--card-bg);
+      color: var(--btn-primary);
+      transform: translateY(-1px);
+    }
+
+    /* OVERLAYS */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 20;
+    }
+    .overlay.active { display: flex; }
+
+    .dialog {
+      width: 90%;
+      max-width: 360px;
+      background: var(--card-bg);
+      border-radius: 0;
+      padding: 14px 12px;
+      border: 1px solid var(--card-border);
+    }
+    .dialog-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .dialog-body {
+      font-size: 14px;
+      margin-bottom: 10px;
+      color: var(--text-main);
+    }
+    .dialog-body input {
+      width: 100%;
+      padding: 8px 9px;
+      border-radius: 0;
+      border: 1px solid var(--card-border);
+      background: var(--bg-body);
+      color: var(--text-main);
+      font-size: 14px;
+      margin-top: 4px;
+      margin-bottom: 6px;
+    }
+    .dialog-body input::placeholder { color: var(--text-soft); }
+
+    .dialog-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 6px;
+    }
+
+    /* COW GRID - 2 BÜYÜK KART */
+    .cow-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+    .cow-card {
+      background: var(--card-bg);
+      border-radius: var(--radius-card);
+      padding: 12px 10px 10px;
+      border: 1px solid var(--card-border);
+    }
+    .cow-card.cooldown {
+      border-color: var(--card-border);
+    }
+
+    .cow-image {
+      width: 100%;
+      height: 110px;
+      border-radius: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 10px;
+      background-size: cover;
+      background-position: center;
+      font-size: 30px;
+    }
+    .cow-image-montbeliard {
+      background: linear-gradient(135deg, #f97316, #fed7aa);
+    }
+    .cow-image-hereford {
+      background: linear-gradient(135deg, #b91c1c, #fecaca);
+    }
+    .cow-image-alaca {
+      background: linear-gradient(135deg, #111827, #e5e7eb);
+    }
+    .cow-image-montofon {
+      background: linear-gradient(135deg, #4b5563, #d1d5db);
+    }
+
+    .cow-name-large {
+      font-size: 16px;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 4px;
+    }
+    .cow-props {
+      font-size: 13px;
+      color: var(--text-muted);
+      text-align: center;
+      line-height: 1.4;
+      margin-bottom: 8px;
+    }
+    .cow-btn-row {
+      display: flex;
+      gap: 6px;
+      margin-top: 4px;
+    }
+    .cow-btn-row .btn {
+      flex: 1;
+      font-size: 13px;
+      padding: 8px 0;
+    }
+    .cow-grazing-banner {
+      margin-top: 6px;
+      border-radius: 0;
+      background: #facc15;
+      color: #111827;
+      font-weight: 700;
+      font-size: 12px;
+      text-align: center;
+      padding: 6px 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .countdown {
+      font-size: 13px;
+      color: #facc15;
+      margin-top: 4px;
+    }
+
+    .filter-row {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+      margin-top: 4px;
+    }
+    .filter-row .btn {
+      flex: 1;
+      font-size: 12px;
+      padding: 6px 0;
+    }
+    .filter-row .btn.active {
+      background: var(--btn-info);
+      color: #ffffff;
+    }
+
+    .bazaar-seller {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .home-actions {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .home-main-button {
+      background: var(--card-bg);
+      border-radius: var(--radius-card);
+      border: 1px solid var(--card-border);
+      padding: 16px 8px 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      cursor: pointer;
+    }
+    .home-main-button-emoji {
+      font-size: 26px;
+    }
+    .home-main-button-label {
+      font-size: 14px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    /* Yeni profil düzeni */
+    .home-profile {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px;
+      margin: 10px 0 14px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+    }
+
+    .profile-side {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-main);
+      width: 33%;
+    }
+
+    .profile-avatar-center {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+      gap: 6px;
+    }
+
+    .avatar-img {
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      border: 2px solid var(--card-border);
+      object-fit: cover;
+      background: var(--card-bg);
+    }
+
+    .avatar-username {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-main);
+      text-align: center;
+    }
+
+    /* Profil sayfası */
+    .profile-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .profile-avatar-large {
+      width: 90px;
+      height: 90px;
+      border-radius: 50%;
+      border: 3px solid var(--card-border);
+      object-fit: cover;
+      background: var(--card-bg);
+    }
+
+    .profile-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 14px;
+    }
+
+    .profile-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .avatar-choice {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: transform 0.08s ease-out, border-color 0.12s ease-out;
+    }
+    .avatar-choice:hover { transform: translateY(-1px); }
+    .avatar-choice.active { border-color: var(--btn-primary); }
+    .avatar-choice img {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--card-border);
+      background: var(--card-bg);
+    }
+    .avatar-choice span { font-size: 13px; font-weight: 600; }
+
+    .section-heading {
+      margin: 0 0 6px 0;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    .muted-label { color: var(--text-muted); font-size: 13px; }
+
+    /* Sohbet alanı */
+    .chat-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .chat-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .chat-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 10px;
+    }
+    .chat-content { flex: 1; display: flex; flex-direction: column; gap: 3px; }
+    .chat-username { font-weight: 700; font-size: 14px; }
+    .chat-message { font-size: 14px; color: var(--text-main); }
+    .chat-avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--card-border);
+      background: var(--card-bg);
+    }
+    .chat-form { display: flex; gap: 6px; }
+    .chat-form input {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid var(--card-border);
+      background: var(--bg-body);
+      color: var(--text-main);
+      border-radius: var(--radius-btn);
+      font-size: 14px;
+    }
+    .chat-form input::placeholder { color: var(--text-muted); }
+  </style>
+</head>
+<body class="mode-dark">
+  <!-- AUTH -->
+  <div id="auth-overlay" class="auth-overlay">
+    <div class="auth-card">
+      <h2>YERALTI</h2>
+      <div class="auth-tabs">
+        <button class="auth-tab active" data-auth="login">Giriş</button>
+        <button class="auth-tab" data-auth="register">Kayıt Ol</button>
+      </div>
+      <div class="auth-forms">
+        <form id="login-form" class="auth-form active">
+          <input id="login-username" type="text" placeholder="Kullanıcı adı" />
+          <input id="login-password" type="password" placeholder="Şifre" />
+          <button type="submit">Giriş Yap</button>
+        </form>
+        <form id="register-form" class="auth-form">
+          <input id="register-username" type="text" placeholder="Kullanıcı adı (min 5)" />
+          <input id="register-password" type="password" placeholder="Şifre" />
+          <button type="submit">Kayıt Ol</button>
+        </form>
+      </div>
+      <div class="guest-area">
+        <button id="guest-btn">Misafir Olarak Devam Et</button>
+      </div>
+      <div id="auth-error" class="auth-error"></div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <!-- TOP BAR -->
+  <header class="top-bar">
+    <div class="logo">
+      🕶️ MAFYA
+    </div>
+    <div class="top-right">
+      <div class="top-row">
+        <span class="pill">Nakit</span>
+        <span id="coin-amount">0</span> TL 💵
+        <span id="mode-toggle" class="mode-toggle">🌙</span>
+        <button id="back-button" class="back-btn">⟵</button>
+      </div>
+      <div class="top-row">
+        <span class="pill">Süt</span>
+        🥛 <span id="milk-amount">0</span> L
+      </div>
+      <div class="top-row">
+        <span class="pill">Kaçak</span>
+        🧪 <span id="contraband-amount">0</span>
+      </div>
+      <div class="top-row">
+        <span class="pill">İnek</span>
+        🐄 <span id="cow-count">0</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- CONTENT -->
+  <main class="content">
+    <!-- HOME -->
+    <section class="page active" data-page="home">
+      <div class="home-profile">
+        <div class="profile-side">
+          Aile: <span id="home-family">Yok</span>
+        </div>
+        <div class="profile-avatar-center" id="open-profile">
+          <img id="home-avatar" class="avatar-img" alt="Avatar" />
+          <div class="avatar-username" id="player-username"></div>
+        </div>
+        <div class="profile-side">
+          Semt: <span id="home-district">Belirtilmemiş</span>
+        </div>
+      </div>
+
+      <div class="home-actions">
+        <button class="home-main-button" data-target="cows">
+          <div class="home-main-button-emoji">🐄</div>
+          <div class="home-main-button-label">Çiftliğim</div>
+        </button>
+        <button class="home-main-button" data-target="factory">
+          <div class="home-main-button-emoji">🏭</div>
+          <div class="home-main-button-label">Fabrika</div>
+        </button>
+        <button class="home-main-button" data-target="inventory">
+          <div class="home-main-button-emoji">📦</div>
+          <div class="home-main-button-label">Depo</div>
+        </button>
+        <button class="home-main-button" data-target="bazaar">
+          <div class="home-main-button-emoji">📈</div>
+          <div class="home-main-button-label">Pazar</div>
+        </button>
+        <button class="home-main-button" data-target="market">
+          <div class="home-main-button-emoji">🏪</div>
+          <div class="home-main-button-label">Market</div>
+        </button>
+        <button class="home-main-button" data-target="settings">
+          <div class="home-main-button-emoji">⚙️</div>
+          <div class="home-main-button-label">Ayarlar</div>
+        </button>
+        <button class="home-main-button" data-target="bank">
+          <div class="home-main-button-emoji">🏦</div>
+          <div class="home-main-button-label">Banka</div>
+        </button>
+      </div>
+    </section>
+
+    <!-- COWS -->
+    <section class="page" data-page="cows">
+      <h2 class="page-title">İneklerim</h2>
+      <p class="hint">Her ineği tek tek sağ ya da toplu sağ yap (%10 komisyon). Sağılan inek 3 saat otlanır, ömrü 90 gün.</p>
+
+      <div class="card">
+        <button class="btn btn-info" id="collect-all-btn" style="width:100%;">TOPLU SAĞ (%10 komisyon)</button>
+      </div>
+
+      <div id="cow-grid" class="cow-grid"></div>
+    </section>
+
+    <!-- FACTORY -->
+    <section class="page" data-page="factory">
+      <h2 class="page-title">Fabrika</h2>
+      <p class="hint">Kaçak malzeme fabrikasıyla üretim yap. Üretim 2 saat sürer, bitince teslim alırsın.</p>
+
+      <div class="card" id="factory-card">
+        <div class="card-row">
+          <div class="card-img">🏭</div>
+          <div class="card-info">
+            <h3>Kaçak Malzeme Fabrikası</h3>
+            <p>Üretim: 100 adet / 2 saat, 1 adet = 50 TL</p>
+          </div>
+        </div>
+        <p id="factory-owned-text" style="margin:6px 0 2px;font-size:14px;"></p>
+        <p id="factory-status-text" style="margin:2px 0;font-size:14px;color:var(--text-muted);"></p>
+        <div class="card-actions">
+          <button class="btn btn-primary" id="factory-action-btn" style="width:100%;">Fabrika Satın Al (20.000 TL)</button>
+        </div>
+        <div id="factory-countdown" class="countdown"></div>
+      </div>
+    </section>
+
+    <!-- INVENTORY -->
+    <section class="page" data-page="inventory">
+      <h2 class="page-title">Depo</h2>
+      <p class="hint">Sahip olduğun süt ve kaçak malzemeyi buradan yönet.</p>
+
+      <div class="card">
+        <h3 style="margin:0 0 6px 0;font-size:15px;">Depo Durumu</h3>
+        <p style="margin:2px 0;font-size:14px;">Toplam Süt: <strong><span id="inventory-milk">0</span> L</strong></p>
+        <p style="margin:2px 0;font-size:14px;">Kaçak Malzeme: <strong><span id="inventory-contraband">0</span> adet</strong></p>
+        <p style="margin:2px 0;font-size:14px;">Nakit: <strong><span id="inventory-coins">0</span> TL</strong></p>
+        <div class="card-actions" style="flex-direction:column;margin-top:10px;">
+          <button class="btn btn-danger" id="sell-milk-btn" style="width:100%;">Sütü Pazarda Sat</button>
+          <button class="btn btn-info" id="sell-contraband-btn" style="width:100%;">Kaçak Malzemeleri Sat (hepsi)</button>
+        </div>
+        <p style="margin:6px 0 0 0;font-size:12px;color:var(--text-muted);">
+          Kaçak malzeme satışı: 1 adet = 50 TL. Sütü pazarda adetli ilan olarak satarsın.
+        </p>
+      </div>
+    </section>
+
+    <!-- BAZAAR -->
+    <section class="page" data-page="bazaar">
+      <h2 class="page-title">Pazar</h2>
+      <p class="hint">Burada süt ilanlarını görür, adetle satın alırsın. En yeni ilan üsttedir.</p>
+
+      <div class="card">
+        <div class="filter-row">
+          <button class="btn btn-secondary active" id="filter-new">Yeni</button>
+          <button class="btn btn-secondary" id="filter-price">Fiyat</button>
+          <button class="btn btn-secondary" id="filter-qty">Miktar</button>
+        </div>
+        <p style="margin:4px 0 0 0;font-size:12px;color:var(--text-muted);">
+          Fiyat veya miktara göre sıralamak için filtrelere dokun.
+        </p>
+      </div>
+
+      <div id="bazaar-list"></div>
+    </section>
+
+    <!-- MARKET -->
+    <section class="page" data-page="market">
+      <h2 class="page-title">Market</h2>
+      <p class="hint">Her inek 1.000 TL. Tür olasılıkları: Montbeliard 20, Hereford 40, Alaca 60, Montofon 80 ağırlık.</p>
+
+      <div class="card">
+        <div class="card-row">
+          <div class="card-img">❓</div>
+          <div class="card-info">
+            <h3>Rastgele İnek</h3>
+            <p>Montbeliard / Hereford / Alaca / Montofon</p>
+            <p style="margin:2px 0;font-size:14px;">Fiyat: <strong>1.000 TL</strong></p>
+            <div id="countdown" class="countdown"></div>
+          </div>
+        </div>
+        <div class="card-actions">
+          <button class="btn btn-primary" id="buy-cow-btn">Satın Al 🐄</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- BANK -->
+    <section class="page" data-page="bank">
+      <h2 class="page-title">Banka</h2>
+      <p class="hint">11 haneli hesap numaranla oyunculara para gönder.</p>
+
+      <div class="card">
+        <h3 style="margin:0 0 6px 0;font-size:15px;">Hesap Bilgisi</h3>
+        <p style="margin:2px 0;font-size:14px;">Hesap Numaran: <strong id="bank-account-number">-</strong></p>
+        <p style="margin:2px 0;font-size:14px;">Banka Bakiyesi: <strong><span id="bank-balance">0</span> TL</strong></p>
+        <div class="card-actions">
+          <button class="btn btn-info" id="bank-copy-btn">Hesap No Kopyala</button>
+        </div>
+        <p style="margin:6px 0 0 0;font-size:12px;color:var(--text-muted);">Hesap numarası her kullanıcı için sabittir ve 11 hanedir.</p>
+      </div>
+
+      <div class="card">
+        <h3 style="margin:0 0 6px 0;font-size:15px;">İşlemler</h3>
+        <div class="card-actions" style="flex-direction:column; gap:8px;">
+          <button class="btn btn-primary" id="bank-go-transfer" style="width:100%;">Havale & EFT</button>
+          <button class="btn btn-secondary" id="bank-go-history" style="width:100%;">Hesap Hareketleri</button>
+        </div>
+        <p style="margin:6px 0 0 0;font-size:12px;color:var(--text-muted);">Butona dokununca tam ekran işlem sayfası açılır.</p>
+      </div>
+    </section>
+
+    <!-- BANK TRANSFER PAGE -->
+    <section class="page" data-page="bank-transfer">
+      <h2 class="page-title">Havale & EFT</h2>
+      <p class="hint">11 haneli hesap numarası ve tutarı gir. İşlem tam ekran yapılır.</p>
+
+      <div class="card">
+        <p style="margin:2px 0;font-size:14px;">Hesap No: <strong id="bank-transfer-account">-</strong></p>
+        <p style="margin:2px 0;font-size:14px;">Bakiye: <strong><span id="bank-transfer-balance">0</span> TL</strong></p>
+      </div>
+
+      <div class="card">
+        <h3 style="margin:0 0 6px 0;font-size:15px;">Para Gönder</h3>
+        <p style="margin:2px 0;font-size:14px;">Hedef hesap numarasını ve tutarı yaz.</p>
+        <input id="bank-transfer-target" type="text" inputmode="numeric" pattern="\d*" maxlength="11" placeholder="Hedef hesap no" class="full-input" />
+        <input id="bank-transfer-amount" type="number" min="1" placeholder="Tutar (TL)" class="full-input" />
+        <div class="card-actions" style="margin-top:10px;">
+          <button class="btn btn-secondary" id="bank-transfer-back" style="flex:1;">Bankaya Dön</button>
+          <button class="btn btn-primary" id="bank-transfer-submit" style="flex:1;">Gönder</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- BANK HISTORY PAGE -->
+    <section class="page" data-page="bank-history">
+      <h2 class="page-title">Hesap Hareketleri</h2>
+      <p class="hint">Son transferlerin burada listelenir.</p>
+
+      <div class="card">
+        <div class="card-actions" style="margin-bottom:10px;">
+          <button class="btn btn-secondary" id="bank-history-back" style="width:100%;">Bankaya Dön</button>
+        </div>
+        <div id="bank-history-list" class="history-list"></div>
+      </div>
+    </section>
+
+    <!-- CHAT / SOHBET -->
+    <section class="page" data-page="chat">
+      <h2 class="page-title">Sohbet</h2>
+      <p class="hint">Anlık mesajlaş, mesajların en alttan eklenir.</p>
+      <div class="chat-wrapper">
+        <div id="chat-list" class="chat-list"></div>
+        <form id="chat-form" class="chat-form">
+          <input id="chat-input" type="text" maxlength="200" placeholder="Mesaj yaz..." autocomplete="off" />
+          <button class="btn btn-primary" type="submit">Gönder</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section class="page" data-page="settings">
+      <h2 class="page-title">Ayarlar</h2>
+      <p class="hint">Hesap bilgilerin ve görünüm.</p>
+
+      <div class="card">
+        <h3 style="margin:0 0 6px 0;font-size:15px;">Profil</h3>
+        <p id="settings-username-text" style="margin:2px 0;font-size:14px;">Kullanıcı: -</p>
+        <p style="margin:2px 0;font-size:13px;color:var(--text-muted);">
+          Gece/Gündüz modu sağ üstteki 🌙/☀️ ikonundan değişir ve hesabına kaydedilir.
+        </p>
+      </div>
+    </section>
+    
+    <!-- PROFILE PAGE -->
+<section class="page" data-page="profile">
+  <h2 class="page-title">Profilim</h2>
+  <p class="hint">Avatarını seç, bilgilerini gör.</p>
+
+  <div class="card">
+    <div class="profile-header">
+      <img id="profile-avatar" class="profile-avatar-large" alt="Profil Avatarı" />
+      <div class="profile-meta">
+        <div><strong id="profile-username"></strong></div>
+        <div class="muted-label">Nakit: <span id="profile-coins">0</span> TL</div>
+        <div class="muted-label">Süt: <span id="profile-milk">0</span> L | Kaçak: <span id="profile-contraband">0</span></div>
+      </div>
+    </div>
+    <div class="card-actions" style="margin-top:12px;">
+      <button class="btn btn-info" id="edit-avatar-btn" style="width:100%;">Avatarı Düzenle</button>
+    </div>
+  </div>
+
+  <div class="card" id="avatar-chooser" style="display:none;">
+    <div class="section-heading">Avatar Seç</div>
+    <div class="profile-grid" id="avatar-grid"></div>
+  </div>
+</section>
+  </main>
+
+  <!-- BOTTOM NAV – Ana, Sohbet, Ayarlar -->
+  <nav class="bottom-nav">
+    <button class="active" data-target="home">🏠</button>
+    <button data-target="chat">💬</button>
+    <button data-target="settings">⚙️</button>
+  </nav>
+
+  <!-- BUY COW POPUP -->
+  <div class="overlay" id="buy-overlay">
+    <div class="dialog">
+      <div class="dialog-title">Rastgele İnek Satın Al</div>
+      <div class="dialog-body">
+        Fiyat: <strong>1.000 TL</strong><br>
+        Paran yeterliyse rastgele bir inek alacaksın. Onaylıyor musun?
+      </div>
+      <div class="dialog-actions">
+        <button class="btn btn-secondary" id="cancel-buy">İptal</button>
+        <button class="btn btn-primary" id="confirm-buy">Satın Al</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SELL INVENTORY MILK POPUP -->
+  <div class="overlay" id="sell-overlay">
+    <div class="dialog">
+      <div class="dialog-title">Pazarda Satış İlanı</div>
+      <div class="dialog-body">
+        Satmak istediğin süt miktarını ve birim fiyatı gir.<br>
+        <span style="font-size:12px;color:var(--text-muted);">Birim fiyat en az 1 TL.</span>
+        <input id="sell-qty-input" type="number" min="1" placeholder="Miktar (L)" />
+        <input id="sell-price-input" type="number" min="1" placeholder="Birim fiyat (TL)" />
+      </div>
+      <div class="dialog-actions">
+        <button class="btn btn-secondary" id="sell-cancel-btn">İptal</button>
+        <button class="btn btn-primary" id="sell-confirm-btn">İlan Ver</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- BUY FROM BAZAAR POPUP -->
+  <div class="overlay" id="bazaar-buy-overlay">
+    <div class="dialog">
+      <div class="dialog-title">Pazardan Satın Al</div>
+      <div class="dialog-body">
+        <div id="bazaar-buy-info" style="margin-bottom:4px;"></div>
+        <input id="bazaar-buy-qty-input" type="number" min="1" placeholder="Alınacak miktar (L)" />
+      </div>
+      <div class="dialog-actions">
+        <button class="btn btn-secondary" id="bazaar-buy-cancel-btn">İptal</button>
+        <button class="btn btn-primary" id="bazaar-buy-confirm-btn">Satın Al</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  // ==========================
+  // SABİTLER
+  // ==========================
+  const AUTH_KEYS = {
+    accounts: "mafya_accounts_v1",
+    bazaarListings: "mafya_bazaar_v1",
+    chat: "mafya_chat_v1",
+  };
+
+  const AVATAR_CHOICES = [
+    {
+      id: "rebel",
+      label: "Rebel",
+      url:
+        "data:image/svg+xml;utf8," +
+        encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='360' height='440'><defs><linearGradient id='bg1' x1='0' y1='0' x2='1' y2='1'><stop offset='0%' stop-color='#0b0f17'/><stop offset='100%' stop-color='#111827'/></linearGradient></defs><rect width='360' height='440' fill='url(#bg1)'/><rect x='40' y='60' width='280' height='320' rx='18' fill='#0f172a' stroke='#38bdf8' stroke-width='3'/><circle cx='180' cy='210' r='90' fill='#d7b89c' stroke='#a56f52' stroke-width='5'/><rect x='114' y='210' width='132' height='140' rx='26' fill='#d7b89c' stroke='#a56f52' stroke-width='5'/><rect x='125' y='200' width='110' height='26' fill='#0f172a' opacity='0.25'/><ellipse cx='150' cy='200' rx='12' ry='10' fill='#111827'/><ellipse cx='210' cy='200' rx='12' ry='10' fill='#111827'/><path d='M155 245 Q180 265 205 245' stroke='#111827' stroke-width='5' fill='none'/><text x='180' y='120' font-size='42' text-anchor='middle' fill='#38bdf8' font-family='Arial Black'>REBEL</text><text x='180' y='150' font-size='20' text-anchor='middle' fill='#cbd5e1' font-family='Arial'>Black suit</text><text x='150' y='215' font-size='16' fill='#38bdf8' font-family='Arial'>✚</text><text x='215' y='230' font-size='18' fill='#38bdf8' font-family='Arial'>✦</text></svg>`),
+    },
+    {
+      id: "hate",
+      label: "Hate",
+      url:
+        "data:image/svg+xml;utf8," +
+        encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='360' height='440'><defs><linearGradient id='bg2' x1='0' y1='0' x2='1' y2='1'><stop offset='0%' stop-color='#0a0e16'/><stop offset='100%' stop-color='#10131c'/></linearGradient></defs><rect width='360' height='440' fill='url(#bg2)'/><rect x='40' y='60' width='280' height='320' rx='18' fill='#0b0f16' stroke='#f87171' stroke-width='3'/><circle cx='180' cy='200' r='88' fill='#d5b295' stroke='#8f684e' stroke-width='5'/><rect x='118' y='205' width='124' height='140' rx='24' fill='#d5b295' stroke='#8f684e' stroke-width='5'/><rect x='130' y='196' width='100' height='24' fill='#0f172a' opacity='0.25'/><ellipse cx='152' cy='195' rx='11' ry='9' fill='#111827'/><ellipse cx='208' cy='195' rx='11' ry='9' fill='#111827'/><path d='M152 238 Q180 258 208 238' stroke='#111827' stroke-width='5' fill='none'/><text x='182' y='120' font-size='42' text-anchor='middle' fill='#f87171' font-family='Arial Black'>HATE</text><text x='182' y='148' font-size='20' text-anchor='middle' fill='#e5e7eb' font-family='Arial'>Ink</text><text x='220' y='214' font-size='16' fill='#f87171' font-family='Arial'>✚</text><text x='145' y='230' font-size='18' fill='#f87171' font-family='Arial'>✦</text></svg>`),
+    },
+    {
+      id: "sinner",
+      label: "Sinner",
+      url:
+        "data:image/svg+xml;utf8," +
+        encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='360' height='440'><defs><linearGradient id='bg3' x1='0' y1='0' x2='1' y2='1'><stop offset='0%' stop-color='#0c0f18'/><stop offset='100%' stop-color='#131927'/></linearGradient></defs><rect width='360' height='440' fill='url(#bg3)'/><rect x='40' y='60' width='280' height='320' rx='18' fill='#0f172a' stroke='#fb923c' stroke-width='3'/><circle cx='180' cy='210' r='90' fill='#d8b69b' stroke='#946a4b' stroke-width='5'/><rect x='114' y='212' width='132' height='142' rx='26' fill='#d8b69b' stroke='#946a4b' stroke-width='5'/><rect x='125' y='202' width='110' height='26' fill='#0f172a' opacity='0.25'/><ellipse cx='150' cy='202' rx='12' ry='10' fill='#111827'/><ellipse cx='210' cy='202' rx='12' ry='10' fill='#111827'/><path d='M152 245 Q180 270 208 245' stroke='#111827' stroke-width='5' fill='none'/><text x='180' y='118' font-size='40' text-anchor='middle' fill='#fb923c' font-family='Arial Black'>SINNER</text><text x='180' y='146' font-size='20' text-anchor='middle' fill='#e5e7eb' font-family='Arial'>Sharp</text><text x='142' y='218' font-size='18' fill='#fb923c' font-family='Arial'>✦</text><text x='215' y='228' font-size='16' fill='#fb923c' font-family='Arial'>✚</text></svg>`),
+    },
+    {
+      id: "lucky",
+      label: "Lucky",
+      url:
+        "data:image/svg+xml;utf8," +
+        encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='360' height='440'><defs><linearGradient id='bg4' x1='0' y1='0' x2='1' y2='1'><stop offset='0%' stop-color='#0a0e14'/><stop offset='100%' stop-color='#0f172a'/></linearGradient></defs><rect width='360' height='440' fill='url(#bg4)'/><rect x='40' y='60' width='280' height='320' rx='18' fill='#0c111b' stroke='#22c55e' stroke-width='3'/><circle cx='180' cy='210' r='90' fill='#d6b598' stroke='#8f6a4e' stroke-width='5'/><rect x='114' y='214' width='132' height='142' rx='26' fill='#d6b598' stroke='#8f6a4e' stroke-width='5'/><rect x='125' y='204' width='110' height='26' fill='#0f172a' opacity='0.25'/><ellipse cx='150' cy='204' rx='12' ry='10' fill='#111827'/><ellipse cx='210' cy='204' rx='12' ry='10' fill='#111827'/><path d='M152 246 Q180 266 208 246' stroke='#111827' stroke-width='5' fill='none'/><text x='180' y='118' font-size='40' text-anchor='middle' fill='#22c55e' font-family='Arial Black'>LUCKY</text><text x='180' y='146' font-size='20' text-anchor='middle' fill='#e5e7eb' font-family='Arial'>Rose</text><text x='215' y='224' font-size='16' fill='#22c55e' font-family='Arial'>✿</text><text x='148' y='234' font-size='18' fill='#22c55e' font-family='Arial'>✦</text></svg>`),
+    },
+    {
+      id: "blond",
+      label: "Blond",
+      url:
+        "data:image/svg+xml;utf8," +
+        encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='360' height='440'><defs><linearGradient id='bg5' x1='0' y1='0' x2='1' y2='1'><stop offset='0%' stop-color='#0b1018'/><stop offset='100%' stop-color='#0f172a'/></linearGradient></defs><rect width='360' height='440' fill='url(#bg5)'/><rect x='40' y='60' width='280' height='320' rx='18' fill='#0d1421' stroke='#facc15' stroke-width='3'/><circle cx='180' cy='210' r='90' fill='#d9b99b' stroke='#946a4b' stroke-width='5'/><rect x='114' y='214' width='132' height='142' rx='26' fill='#d9b99b' stroke='#946a4b' stroke-width='5'/><rect x='120' y='188' width='120' height='40' fill='#facc15' stroke='#fbbf24' stroke-width='4' rx='10'/><rect x='125' y='206' width='110' height='22' fill='#0f172a' opacity='0.25'/><ellipse cx='150' cy='206' rx='12' ry='10' fill='#111827'/><ellipse cx='210' cy='206' rx='12' ry='10' fill='#111827'/><path d='M155 248 Q180 270 205 248' stroke='#111827' stroke-width='5' fill='none'/><text x='180' y='118' font-size='40' text-anchor='middle' fill='#facc15' font-family='Arial Black'>BLOND</text><text x='180' y='146' font-size='20' text-anchor='middle' fill='#e5e7eb' font-family='Arial'>Calm</text><text x='140' y='224' font-size='16' fill='#facc15' font-family='Arial'>✶</text><text x='218' y='234' font-size='18' fill='#facc15' font-family='Arial'>✦</text></svg>`),
+    },
+  ];
+
+  const COW_PRICE = 1000;
+  const MILK_COOLDOWN_MS = 3 * 60 * 60 * 1000;
+  const LIFE_DAYS = 90;
+  const DAY_MS = 24 * 60 * 60 * 1000;
+
+  const CONTRABAND_PRICE = 50;
+  const FACTORY_PRICE = 20000;
+  const FACTORY_DURATION_MS = 2 * 60 * 60 * 1000;
+  const FACTORY_OUTPUT = 100;
+
+  const COW_DATA = {
+    Montbeliard: { minMilk: 20000, maxMilk: 40000, sellPrice: 800 },
+    Hereford: { minMilk: 15000, maxMilk: 30000, sellPrice: 600 },
+    Alaca: { minMilk: 10000, maxMilk: 20000, sellPrice: 400 },
+    Montofon: { minMilk: 5000, maxMilk: 10000, sellPrice: 200 },
+  };
+
+  const RANDOM_WEIGHTS = [
+    { name: "Montbeliard", weight: 20 },
+    { name: "Hereford", weight: 40 },
+    { name: "Alaca", weight: 60 },
+    { name: "Montofon", weight: 80 },
+  ];
+
+  const ACCOUNT_NUMBER_LENGTH = 11;
+
+  // ==========================
+  // GLOBAL STATE
+  // ==========================
+  let accounts = {};
+  let currentUser = null;
+  let currentAccount = null;
+  let marketListings = [];
+  let chatMessages = [];
+
+  let currentCoins = 0;
+  let currentMilk = 0;
+  let currentContraband = 0;
+  let cows = [];
+
+  let currentBazaarSort = "new";
+  let priceSortAsc = true;
+  let qtySortDesc = true;
+  let selectedListingId = null;
+
+  // ==========================
+  // ELEMENTLER
+  // ==========================
+  const authOverlay = document.getElementById("auth-overlay");
+  const authTabs = document.querySelectorAll(".auth-tab");
+  const loginForm = document.getElementById("login-form");
+  const registerForm = document.getElementById("register-form");
+  const authError = document.getElementById("auth-error");
+  const guestBtn = document.getElementById("guest-btn");
+
+  const modeToggleEl = document.getElementById("mode-toggle");
+  const coinAmountEl = document.getElementById("coin-amount");
+  const milkAmountEl = document.getElementById("milk-amount");
+  const cowCountEl = document.getElementById("cow-count");
+  const contrabandTopEl = document.getElementById("contraband-amount");
+
+  const pages = document.querySelectorAll(".page");
+  const navButtons = document.querySelectorAll(".bottom-nav button");
+  const backButton = document.getElementById("back-button");
+
+  const homeDistrictEl = document.getElementById("home-district");
+  const homeFamilyEl = document.getElementById("home-family");
+  const playerUsernameEl = document.getElementById("player-username");
+  const homeAvatarImg = document.getElementById("home-avatar");
+
+  const cowGrid = document.getElementById("cow-grid");
+  const collectAllBtn = document.getElementById("collect-all-btn");
+
+  const buyBtn = document.getElementById("buy-cow-btn");
+  const countdownEl = document.getElementById("countdown");
+  const buyOverlay = document.getElementById("buy-overlay");
+  const cancelBuyBtn = document.getElementById("cancel-buy");
+  const confirmBuyBtn = document.getElementById("confirm-buy");
+
+  const inventoryMilkEl = document.getElementById("inventory-milk");
+  const inventoryCoinsEl = document.getElementById("inventory-coins");
+  const inventoryContrabandEl = document.getElementById("inventory-contraband");
+  const sellMilkBtn = document.getElementById("sell-milk-btn");
+  const sellContrabandBtn = document.getElementById("sell-contraband-btn");
+
+  const sellOverlay = document.getElementById("sell-overlay");
+  const sellQtyInput = document.getElementById("sell-qty-input");
+  const sellPriceInput = document.getElementById("sell-price-input");
+  const sellCancelBtn = document.getElementById("sell-cancel-btn");
+  const sellConfirmBtn = document.getElementById("sell-confirm-btn");
+
+  const bazaarListEl = document.getElementById("bazaar-list");
+  const filterNewBtn = document.getElementById("filter-new");
+  const filterPriceBtn = document.getElementById("filter-price");
+  const filterQtyBtn = document.getElementById("filter-qty");
+
+  const bazaarBuyOverlay = document.getElementById("bazaar-buy-overlay");
+  const bazaarBuyInfoEl = document.getElementById("bazaar-buy-info");
+  const bazaarBuyQtyInput = document.getElementById("bazaar-buy-qty-input");
+  const bazaarBuyCancelBtn = document.getElementById("bazaar-buy-cancel-btn");
+  const bazaarBuyConfirmBtn = document.getElementById("bazaar-buy-confirm-btn");
+
+  const factoryOwnedTextEl = document.getElementById("factory-owned-text");
+  const factoryStatusTextEl = document.getElementById("factory-status-text");
+  const factoryActionBtn = document.getElementById("factory-action-btn");
+  const factoryCountdownEl = document.getElementById("factory-countdown");
+
+  const settingsUsernameText = document.getElementById("settings-username-text");
+
+  const profileAvatarEl = document.getElementById("profile-avatar");
+  const profileUsernameEl = document.getElementById("profile-username");
+  const profileCoinsEl = document.getElementById("profile-coins");
+  const profileMilkEl = document.getElementById("profile-milk");
+  const profileContrabandEl = document.getElementById("profile-contraband");
+  const avatarGridEl = document.getElementById("avatar-grid");
+  const avatarChooserCard = document.getElementById("avatar-chooser");
+  const editAvatarBtn = document.getElementById("edit-avatar-btn");
+
+  const chatListEl = document.getElementById("chat-list");
+  const chatForm = document.getElementById("chat-form");
+  const chatInput = document.getElementById("chat-input");
+
+  const bankAccountNumberEl = document.getElementById("bank-account-number");
+  const bankBalanceEl = document.getElementById("bank-balance");
+  const bankCopyBtn = document.getElementById("bank-copy-btn");
+  const bankGoTransferBtn = document.getElementById("bank-go-transfer");
+  const bankGoHistoryBtn = document.getElementById("bank-go-history");
+  const bankTransferAccountEl = document.getElementById("bank-transfer-account");
+  const bankTransferBalanceEl = document.getElementById("bank-transfer-balance");
+  const bankTransferTargetInput = document.getElementById("bank-transfer-target");
+  const bankTransferAmountInput = document.getElementById("bank-transfer-amount");
+  const bankTransferSubmitBtn = document.getElementById("bank-transfer-submit");
+  const bankTransferBackBtn = document.getElementById("bank-transfer-back");
+  const bankHistoryBackBtn = document.getElementById("bank-history-back");
+  const bankHistoryListEl = document.getElementById("bank-history-list");
+
+  const toastEl = document.getElementById("toast");
+
+  // ==========================
+  // YARDIMCI FONKSİYONLAR
+  // ==========================
+  let toastTimer = null;
+  function showToast(msg, type = "success") {
+    if (!toastEl) return;
+    toastEl.textContent = msg;
+    toastEl.classList.remove("toast-success", "toast-error", "show");
+    toastEl.classList.add(type === "error" ? "toast-error" : "toast-success");
+    void toastEl.offsetWidth;
+    toastEl.classList.add("show");
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toastEl.classList.remove("show"), 3000);
+  }
+
+  function requireAccount() {
+    if (!currentAccount) {
+      showToast("Önce giriş yap.", "error");
+      return false;
+    }
+    return true;
+  }
+
+  function updateBackButton(target) {
+    if (!backButton) return;
+    backButton.style.display = target === "home" ? "none" : "inline-flex";
+  }
+
+  function showPage(target) {
+    pages.forEach((page) => {
+      page.classList.toggle("active", page.dataset.page === target);
+    });
+
+    navButtons.forEach((btn) => {
+      btn.classList.toggle("active", btn.dataset.target === target);
+    });
+
+    updateBackButton(target);
+
+    if (target === "inventory") updateInventoryView();
+    if (target === "bazaar") renderBazaar();
+    if (target === "factory") renderFactoryView();
+    if (target === "bank" || target === "bank-transfer") updateBankView();
+    if (target === "bank-history") renderBankHistory();
+    if (target === "profile") updateProfileView();
+    if (target === "chat") renderChat();
+  }
+
+  function loadAccounts() {
+    const raw = localStorage.getItem(AUTH_KEYS.accounts);
+    if (!raw) {
+      accounts = {};
+      return;
+    }
+    try {
+      accounts = JSON.parse(raw) || {};
+    } catch {
+      accounts = {};
+    }
+    ensureAccountNumbersForAll();
+  }
+
+  function saveAccounts() {
+    localStorage.setItem(AUTH_KEYS.accounts, JSON.stringify(accounts));
+  }
+
+  function generateUniqueAccountNumber(usedSet) {
+    const used = usedSet || new Set(Object.values(accounts || {}).map((acc) => acc.accountNumber).filter(Boolean));
+    let number;
+    do {
+      number = Math.floor(10 ** (ACCOUNT_NUMBER_LENGTH - 1) + Math.random() * 9 * 10 ** (ACCOUNT_NUMBER_LENGTH - 1)).toString();
+    } while (used.has(number));
+    used.add(number);
+    return number;
+  }
+
+  function ensureAccountNumbersForAll() {
+    const used = new Set();
+    Object.values(accounts || {}).forEach((acc) => {
+      if (!acc) return;
+      if (!Array.isArray(acc.bankHistory)) acc.bankHistory = [];
+      if (!acc.accountNumber || used.has(acc.accountNumber)) {
+        acc.accountNumber = generateUniqueAccountNumber(used);
+      }
+      used.add(acc.accountNumber);
+    });
+    saveAccounts();
+  }
+
+  function ensureCurrentAccountNumber() {
+    if (!currentAccount) return;
+    const used = new Set(
+      Object.values(accounts || {})
+        .filter((acc) => acc && acc !== currentAccount)
+        .map((acc) => acc.accountNumber)
+        .filter(Boolean)
+    );
+    if (!currentAccount.accountNumber || used.has(currentAccount.accountNumber)) {
+      currentAccount.accountNumber = generateUniqueAccountNumber(used);
+      saveAccounts();
+    }
+  }
+
+  function loadMarketListings() {
+    const raw = localStorage.getItem(AUTH_KEYS.bazaarListings);
+    if (!raw) {
+      marketListings = [];
+      return;
+    }
+    try {
+      const arr = JSON.parse(raw);
+      marketListings = Array.isArray(arr) ? arr : [];
+    } catch {
+      marketListings = [];
+    }
+  }
+
+  function saveMarketListings() {
+    localStorage.setItem(AUTH_KEYS.bazaarListings, JSON.stringify(marketListings));
+  }
+
+  function loadChatMessages() {
+    const raw = localStorage.getItem(AUTH_KEYS.chat);
+    if (!raw) {
+      chatMessages = [
+        {
+          id: "seed1",
+          user: "MafyaBot",
+          avatar: AVATAR_CHOICES[0]?.id || "rebel",
+          text: "Sohbet açıldı, ilk mesaj senden gelsin!",
+          createdAt: Date.now(),
+        },
+      ];
+      return;
+    }
+    try {
+      const arr = JSON.parse(raw);
+      chatMessages = Array.isArray(arr) ? arr : [];
+    } catch {
+      chatMessages = [];
+    }
+  }
+
+  function saveChatMessages() {
+    localStorage.setItem(AUTH_KEYS.chat, JSON.stringify(chatMessages.slice(-80)));
+  }
+
+  function setCurrentUser(username) {
+    currentUser = username;
+    currentAccount = accounts[username] || null;
+  }
+
+  function createDefaultCows() {
+    const now = Date.now();
+    return [
+      { id: `${now}_M1_${Math.random()}`, name: "Montbeliard", birthTime: now, lastMilkTime: 0 },
+      { id: `${now}_H1_${Math.random()}`, name: "Hereford", birthTime: now, lastMilkTime: 0 },
+      { id: `${now}_A1_${Math.random()}`, name: "Alaca", birthTime: now, lastMilkTime: 0 },
+    ];
+  }
+
+  function defaultFactoryState() {
+    return { owned: false, productionStart: null };
+  }
+
+  function createEmptyAccount(username, password, isGuest) {
+    return {
+      username,
+      password: isGuest ? null : password,
+      isGuest: !!isGuest,
+      coins: 125000,
+      milk: 0,
+      contraband: 0,
+      cows: createDefaultCows(),
+      lastPurchase: null,
+      factory: defaultFactoryState(),
+      mode: "dark",
+      family: "Yok",
+      district: "Belirtilmemiş",
+      avatar: AVATAR_CHOICES[0]?.id || "rebel",
+      accountNumber: generateUniqueAccountNumber(),
+      bankHistory: [],
+    };
+  }
+
+  function showAuth() {
+    authOverlay.classList.remove("hidden");
+  }
+
+  function hideAuth() {
+    authOverlay.classList.add("hidden");
+  }
+
+  function normalizeCurrentAccount() {
+    if (!currentAccount) return;
+
+    if (typeof currentAccount.coins !== "number") currentAccount.coins = 0;
+    if (typeof currentAccount.milk !== "number") currentAccount.milk = 0;
+    if (typeof currentAccount.contraband !== "number") currentAccount.contraband = 0;
+
+    if (!Array.isArray(currentAccount.cows)) currentAccount.cows = [];
+    if (!currentAccount.factory) currentAccount.factory = defaultFactoryState();
+    if (typeof currentAccount.factory.owned !== "boolean") currentAccount.factory.owned = false;
+    if (!("productionStart" in currentAccount.factory)) currentAccount.factory.productionStart = null;
+
+    if (!currentAccount.mode) currentAccount.mode = "dark";
+    if (!currentAccount.family) currentAccount.family = "Yok";
+    if (!currentAccount.district) currentAccount.district = "Belirtilmemiş";
+
+    if (!currentAccount.avatar) currentAccount.avatar = AVATAR_CHOICES[0]?.id || "rebel";
+    if (!Array.isArray(currentAccount.bankHistory)) currentAccount.bankHistory = [];
+
+    ensureCurrentAccountNumber();
+    saveAccounts();
+  }
+
+  function updateHomeProfileStrip() {
+    if (!currentAccount) return;
+
+    if (homeDistrictEl) {
+      homeDistrictEl.textContent = currentAccount.district || "Belirtilmemiş";
+    }
+    if (homeFamilyEl) {
+      homeFamilyEl.textContent = currentAccount.family || "Yok";
+    }
+
+    if (playerUsernameEl) {
+      const savedUser = localStorage.getItem("username");
+      playerUsernameEl.textContent = savedUser || currentAccount.username || "-";
+    }
+
+    updateAvatarViews();
+  }
+
+  function getAvatarUrl(id) {
+    const found = AVATAR_CHOICES.find((a) => a.id === id);
+    return found ? found.url : AVATAR_CHOICES[0].url;
+  }
+
+  function updateAvatarViews() {
+    const url = getAvatarUrl(currentAccount?.avatar);
+    if (homeAvatarImg) homeAvatarImg.src = url;
+    if (profileAvatarEl) profileAvatarEl.src = url;
+  }
+
+  function renderAvatarGrid() {
+    if (!avatarGridEl) return;
+    avatarGridEl.innerHTML = "";
+
+    AVATAR_CHOICES.forEach((choice) => {
+      const card = document.createElement("div");
+      card.className = "avatar-choice";
+      if (currentAccount?.avatar === choice.id) card.classList.add("active");
+
+      const img = document.createElement("img");
+      img.src = choice.url;
+      img.alt = choice.label;
+
+      const label = document.createElement("span");
+      label.textContent = choice.label;
+
+      card.appendChild(img);
+      card.appendChild(label);
+
+      card.addEventListener("click", () => {
+        if (!requireAccount()) return;
+        currentAccount.avatar = choice.id;
+        saveAccounts();
+        renderAvatarGrid();
+        updateAvatarViews();
+        showToast(`Avatar değiştirildi: ${choice.label}`);
+      });
+
+      avatarGridEl.appendChild(card);
+    });
+  }
+
+  function findAccountByNumber(number) {
+    return Object.values(accounts || {}).find((acc) => acc && acc.accountNumber === number);
+  }
+
+  // ==========================
+  // MOD (GECE / GÜNDÜZ)
+  // ==========================
+  function applyMode() {
+    const mode = currentAccount?.mode || "dark";
+    document.body.classList.remove("mode-dark", "mode-light");
+
+    if (mode === "light") {
+      document.body.classList.add("mode-light");
+      modeToggleEl.textContent = "☀️";
+    } else {
+      document.body.classList.add("mode-dark");
+      modeToggleEl.textContent = "🌙";
+    }
+  }
+
+  function toggleMode() {
+    if (!currentAccount) return;
+    currentAccount.mode = currentAccount.mode === "light" ? "dark" : "light";
+    saveAccounts();
+    applyMode();
+  }
+
+  if (modeToggleEl) {
+    modeToggleEl.addEventListener("click", toggleMode);
+  }
+
+  // ==========================
+  // AUTH
+  // ==========================
+  authTabs.forEach((tab) => {
+    tab.addEventListener("click", () => {
+      authTabs.forEach((t) => t.classList.remove("active"));
+      tab.classList.add("active");
+
+      const target = tab.dataset.auth;
+      if (target === "login") {
+        loginForm.classList.add("active");
+        registerForm.classList.remove("active");
+      } else {
+        registerForm.classList.add("active");
+        loginForm.classList.remove("active");
+      }
+      authError.textContent = "";
+    });
+  });
+
+  if (loginForm) {
+    loginForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      authError.textContent = "";
+
+      const u = document.getElementById("login-username").value.trim();
+      const p = document.getElementById("login-password").value;
+
+      if (!u || !p) {
+        authError.textContent = "Kullanıcı adı ve şifre boş olamaz.";
+        return;
+      }
+      if (!accounts[u]) {
+        authError.textContent = "Böyle bir kullanıcı yok.";
+        return;
+      }
+      if (!accounts[u].isGuest && accounts[u].password !== p) {
+        authError.textContent = "Şifre yanlış.";
+        return;
+      }
+
+      setCurrentUser(u);
+      normalizeCurrentAccount();
+      hideAuth();
+      localStorage.setItem("username", u);
+      startGameForCurrentUser();
+    });
+  }
+
+  if (registerForm) {
+    registerForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      authError.textContent = "";
+
+      const u = document.getElementById("register-username").value.trim();
+      const p = document.getElementById("register-password").value;
+
+      if (!u || !p) {
+        authError.textContent = "Kullanıcı adı ve şifre boş olamaz.";
+        return;
+      }
+      if (u.length < 5) {
+        authError.textContent = "Kullanıcı adı en az 5 karakter olmalı.";
+        return;
+      }
+      if (accounts[u]) {
+        authError.textContent = "Bu kullanıcı adı zaten alınmış.";
+        return;
+      }
+
+      accounts[u] = createEmptyAccount(u, p, false);
+      saveAccounts();
+      setCurrentUser(u);
+      normalizeCurrentAccount();
+      hideAuth();
+      localStorage.setItem("username", u);
+      startGameForCurrentUser();
+    });
+  }
+
+  if (guestBtn) {
+    guestBtn.addEventListener("click", () => {
+      authError.textContent = "";
+
+      let uname;
+      do {
+        uname = "Misafir_" + Math.floor(1000 + Math.random() * 9000);
+      } while (accounts[uname]);
+
+      accounts[uname] = createEmptyAccount(uname, null, true);
+      saveAccounts();
+      setCurrentUser(uname);
+      normalizeCurrentAccount();
+      hideAuth();
+      localStorage.setItem("username", uname);
+      startGameForCurrentUser();
+    });
+  }
+
+  // ==========================
+  // PARA / ENVANTER LOAD & SAVE
+  // ==========================
+  function loadCoins() {
+    currentCoins = currentAccount ? currentAccount.coins || 0 : 0;
+    coinAmountEl.textContent = currentCoins;
+  }
+
+  function saveCoins() {
+    if (!currentAccount) return;
+    currentAccount.coins = currentCoins;
+    saveAccounts();
+  }
+
+  function loadMilk() {
+    currentMilk = currentAccount ? currentAccount.milk || 0 : 0;
+    if (milkAmountEl) milkAmountEl.textContent = currentMilk;
+  }
+
+  function saveMilk() {
+    if (!currentAccount) return;
+    currentAccount.milk = currentMilk;
+    saveAccounts();
+  }
+
+  function loadContraband() {
+    currentContraband = currentAccount ? currentAccount.contraband || 0 : 0;
+    if (contrabandTopEl) contrabandTopEl.textContent = currentContraband;
+  }
+
+  function saveContraband() {
+    if (!currentAccount) return;
+    currentAccount.contraband = currentContraband;
+    saveAccounts();
+    if (contrabandTopEl) contrabandTopEl.textContent = currentContraband;
+  }
+
+  function randomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+
+  function formatTime(ts) {
+    const d = new Date(ts);
+    const dd = d.getDate().toString().padStart(2, "0");
+    const mm = (d.getMonth() + 1).toString().padStart(2, "0");
+    const hh = d.getHours().toString().padStart(2, "0");
+    const min = d.getMinutes().toString().padStart(2, "0");
+    return `${dd}.${mm} ${hh}:${min}`;
+  }
+
+  // ==========================
+  // İNEKLER
+  // ==========================
+  function normalizeCow(cow, index) {
+    if (!cow.id) cow.id = `${Date.now()}_${index}_${Math.random()}`;
+    if (!cow.birthTime) cow.birthTime = Date.now();
+    if (cow.lastMilkTime === undefined || cow.lastMilkTime === null) cow.lastMilkTime = 0;
+  }
+
+  function canMilkCow(cow, now) {
+    const last = cow.lastMilkTime || 0;
+    return now - last >= MILK_COOLDOWN_MS;
+  }
+
+  function loadCows() {
+    cows = currentAccount && Array.isArray(currentAccount.cows) ? currentAccount.cows : [];
+    renderCows();
+  }
+
+  function saveCows() {
+    if (!currentAccount) return;
+    currentAccount.cows = cows;
+    saveAccounts();
+  }
+
+  function renderCows() {
+    const now = Date.now();
+    let removedCount = 0;
+
+    cows = (Array.isArray(cows) ? cows : []).filter((cow, index) => {
+      normalizeCow(cow, index);
+      const ageMs = now - cow.birthTime;
+      const ageDays = Math.floor(ageMs / DAY_MS);
+      if (ageDays >= LIFE_DAYS) {
+        removedCount++;
+        return false;
+      }
+      return true;
+    });
+
+    if (removedCount > 0) {
+      saveCows();
+      showToast(`${removedCount} inek öldü 💀`, "error");
+    }
+
+    cowGrid.innerHTML = "";
+    cows.forEach((cow, index) => {
+      normalizeCow(cow, index);
+      const data = COW_DATA[cow.name] || { minMilk: 0, maxMilk: 0, sellPrice: 0 };
+
+      const ageMs = now - cow.birthTime;
+      const ageDays = Math.floor(ageMs / DAY_MS);
+      const daysLeft = Math.max(LIFE_DAYS - ageDays, 0);
+      const inCooldown = !canMilkCow(cow, now);
+
+      const card = document.createElement("div");
+      card.className = "cow-card";
+      if (inCooldown) card.classList.add("cooldown");
+
+      const imgDiv = document.createElement("div");
+      imgDiv.className = "cow-image";
+      const breedClass = "cow-image-" + cow.name.toLowerCase().replace(/\s+/g, "");
+      imgDiv.classList.add(breedClass);
+      imgDiv.textContent = "🐄";
+
+      const nameEl = document.createElement("div");
+      nameEl.className = "cow-name-large";
+      nameEl.textContent = cow.name;
+
+      const propsEl = document.createElement("div");
+      propsEl.className = "cow-props";
+      propsEl.innerHTML =
+        `Ömür: ${daysLeft} gün (90)<br>` +
+        `Süt: ${data.minMilk.toLocaleString("tr-TR")} - ${data.maxMilk.toLocaleString("tr-TR")} L`;
+
+      card.appendChild(imgDiv);
+      card.appendChild(nameEl);
+      card.appendChild(propsEl);
+
+      if (inCooldown) {
+        const banner = document.createElement("div");
+        banner.className = "cow-grazing-banner";
+        banner.textContent = "OTLANIYOR...";
+        card.appendChild(banner);
+      } else {
+        const btnRow = document.createElement("div");
+        btnRow.className = "cow-btn-row";
+
+        const btnSağ = document.createElement("button");
+        btnSağ.className = "btn btn-primary";
+        btnSağ.textContent = "SAĞ";
+
+        const btnSat = document.createElement("button");
+        btnSat.className = "btn btn-danger";
+        btnSat.textContent = "Pazarda Sat";
+
+        btnSağ.addEventListener("click", () => {
+          if (!requireAccount()) return;
+          const now2 = Date.now();
+          if (!canMilkCow(cow, now2)) {
+            showToast("Bu inek henüz otlanıyor ❌", "error");
+            return;
+          }
+
+          const produced = randomInt(data.minMilk, data.maxMilk);
+          currentMilk += produced;
+          if (milkAmountEl) milkAmountEl.textContent = currentMilk;
+          saveMilk();
+          updateInventoryView();
+
+          cow.lastMilkTime = now2;
+          saveCows();
+          renderCows();
+
+          showToast(`${cow.name} sağdı: +${produced.toLocaleString("tr-TR")} L süt ✅`);
+        });
+
+        btnSat.addEventListener("click", () => {
+          if (!requireAccount()) return;
+          const price = data.sellPrice || 0;
+          currentCoins += price;
+          coinAmountEl.textContent = currentCoins;
+          saveCoins();
+          updateInventoryView();
+
+          cows = cows.filter((c) => c.id !== cow.id);
+          saveCows();
+          renderCows();
+
+          showToast(`${cow.name} satıldı! +${price} TL`);
+        });
+
+        btnRow.appendChild(btnSağ);
+        btnRow.appendChild(btnSat);
+        card.appendChild(btnRow);
+      }
+
+      cowGrid.appendChild(card);
+    });
+
+    cowCountEl.textContent = cows.length;
+  }
+
+  if (collectAllBtn) {
+    collectAllBtn.addEventListener("click", () => {
+      if (!requireAccount()) return;
+
+      const now = Date.now();
+      let totalProduced = 0;
+      let milkedCount = 0;
+
+      cows.forEach((cow, index) => {
+        normalizeCow(cow, index);
+        if (canMilkCow(cow, now)) {
+          const data = COW_DATA[cow.name];
+          if (!data) return;
+          const produced = randomInt(data.minMilk, data.maxMilk);
+          totalProduced += produced;
+          cow.lastMilkTime = now;
+          milkedCount++;
+        }
+      });
+
+      if (milkedCount === 0) {
+        showToast("Sağılacak inek yok ❌", "error");
+        return;
+      }
+
+      const finalMilk = Math.floor(totalProduced * 0.9);
+      currentMilk += finalMilk;
+      if (milkAmountEl) milkAmountEl.textContent = currentMilk;
+      saveMilk();
+      saveCows();
+      renderCows();
+      updateInventoryView();
+
+      showToast(`Toplu sağ: +${finalMilk.toLocaleString("tr-TR")} L süt (%10 kesinti) ✅`);
+    });
+  }
+
+  function getRandomCowName() {
+    let total = 0;
+    RANDOM_WEIGHTS.forEach((item) => (total += item.weight));
+    const r = Math.random() * total;
+    let sum = 0;
+    for (let i = 0; i < RANDOM_WEIGHTS.length; i++) {
+      sum += RANDOM_WEIGHTS[i].weight;
+      if (r <= sum) return RANDOM_WEIGHTS[i].name;
+    }
+    return "Montofon";
+  }
+
+  // ==========================
+  // İNEK SATIN ALMA
+  // ==========================
+  function updateCountdown() {
+    if (!buyBtn) return;
+
+    if (!currentAccount) {
+      buyBtn.disabled = true;
+      buyBtn.classList.add("btn-disabled");
+      countdownEl.textContent = "";
+      return;
+    }
+
+    const last = currentAccount.lastPurchase;
+    if (!last) {
+      const canBuy = currentCoins >= COW_PRICE;
+      buyBtn.disabled = !canBuy;
+      buyBtn.classList.toggle("btn-disabled", !canBuy);
+      countdownEl.textContent = "";
+      return;
+    }
+
+    const diff = 2 * 60 * 60 * 1000 - (Date.now() - last);
+    if (diff <= 0) {
+      currentAccount.lastPurchase = null;
+      saveAccounts();
+      countdownEl.textContent = "";
+      const canBuy = currentCoins >= COW_PRICE;
+      buyBtn.disabled = !canBuy;
+      buyBtn.classList.toggle("btn-disabled", !canBuy);
+      return;
+    }
+
+    const h = Math.floor(diff / (1000 * 60 * 60));
+    const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const s = Math.floor((diff % (1000 * 60)) / 1000);
+    countdownEl.textContent = `Tekrar satın almak için: ${h} sa ${m} dk ${s} sn`;
+    buyBtn.disabled = true;
+    buyBtn.classList.add("btn-disabled");
+  }
+
+  setInterval(() => {
+    updateCountdown();
+    if (currentAccount) {
+      renderCows();
+      renderFactoryView();
+    }
+  }, 30000);
+
+  if (buyBtn) {
+    buyBtn.addEventListener("click", () => {
+      if (!requireAccount()) return;
+      if (currentCoins < COW_PRICE) {
+        showToast("Yetersiz TL ❌", "error");
+        return;
+      }
+      buyOverlay.classList.add("active");
+    });
+  }
+
+  if (cancelBuyBtn) {
+    cancelBuyBtn.addEventListener("click", () => buyOverlay.classList.remove("active"));
+  }
+
+  if (buyOverlay) {
+    buyOverlay.addEventListener("click", (e) => {
+      if (e.target === buyOverlay) buyOverlay.classList.remove("active");
+    });
+  }
+
+  if (confirmBuyBtn) {
+    confirmBuyBtn.addEventListener("click", () => {
+      if (!requireAccount()) {
+        buyOverlay.classList.remove("active");
+        return;
+      }
+      if (currentCoins < COW_PRICE) {
+        showToast("Yetersiz TL ❌", "error");
+        buyOverlay.classList.remove("active");
+        return;
+      }
+
+      currentCoins -= COW_PRICE;
+      coinAmountEl.textContent = currentCoins;
+      saveCoins();
+
+      const name = getRandomCowName();
+      const newCow = {
+        id: `${Date.now()}_${Math.random()}`,
+        name,
+        birthTime: Date.now(),
+        lastMilkTime: 0,
+      };
+      cows.unshift(newCow);
+      saveCows();
+      renderCows();
+
+      currentAccount.lastPurchase = Date.now();
+      saveAccounts();
+      updateCountdown();
+
+      showToast(`${name} satın alındı ✅`);
+      buyOverlay.classList.remove("active");
+    });
+  }
+
+  // ==========================
+  // ENVANTER & DEPO
+  // ==========================
+  function updateInventoryView() {
+    inventoryMilkEl.textContent = currentMilk;
+    inventoryCoinsEl.textContent = currentCoins;
+    inventoryContrabandEl.textContent = currentContraband;
+    if (contrabandTopEl) contrabandTopEl.textContent = currentContraband;
+    updateBankView();
+  }
+
+  if (sellMilkBtn) {
+    sellMilkBtn.addEventListener("click", () => {
+      if (!requireAccount()) return;
+      if (currentMilk <= 0) {
+        showToast("Satılacak süt yok ❌", "error");
+        return;
+      }
+      sellQtyInput.value = currentMilk;
+      sellPriceInput.value = 1;
+      sellOverlay.classList.add("active");
+    });
+  }
+
+  if (sellCancelBtn) {
+    sellCancelBtn.addEventListener("click", () => sellOverlay.classList.remove("active"));
+  }
+
+  if (sellOverlay) {
+    sellOverlay.addEventListener("click", (e) => {
+      if (e.target === sellOverlay) sellOverlay.classList.remove("active");
+    });
+  }
+
+  if (sellConfirmBtn) {
+    sellConfirmBtn.addEventListener("click", () => {
+      if (!requireAccount()) {
+        sellOverlay.classList.remove("active");
+        return;
+      }
+
+      const qty = parseInt(sellQtyInput.value, 10);
+      const price = parseInt(sellPriceInput.value, 10);
+
+      if (isNaN(qty) || qty <= 0) {
+        showToast("Geçerli miktar gir.", "error");
+        return;
+      }
+      if (qty > currentMilk) {
+        showToast("Elinde o kadar süt yok ❌", "error");
+        return;
+      }
+      if (isNaN(price) || price < 1) {
+        showToast("Birim fiyat en az 1 TL olmalı.", "error");
+        return;
+      }
+
+      currentMilk -= qty;
+      if (milkAmountEl) milkAmountEl.textContent = currentMilk;
+      saveMilk();
+      updateInventoryView();
+
+      const listing = {
+        id: `${Date.now()}_${Math.random()}`,
+        seller: currentUser || "Bilinmeyen",
+        quantity: qty,
+        price,
+        createdAt: Date.now(),
+      };
+
+      marketListings.push(listing);
+      saveMarketListings();
+      renderBazaar();
+
+      sellOverlay.classList.remove("active");
+      showToast(
+        `İlan verdin: ${qty.toLocaleString("tr-TR")} L, birim ${price} TL ✅`
+      );
+    });
+  }
+
+  if (sellContrabandBtn) {
+    sellContrabandBtn.addEventListener("click", () => {
+      if (!requireAccount()) return;
+      if (currentContraband <= 0) {
+        showToast("Satılacak kaçak malzeme yok ❌", "error");
+        return;
+      }
+      const qty = currentContraband;
+      const income = qty * CONTRABAND_PRICE;
+      currentContraband = 0;
+      saveContraband();
+
+      currentCoins += income;
+      coinAmountEl.textContent = currentCoins;
+      saveCoins();
+      updateInventoryView();
+
+      showToast(`Kaçak malzemeleri sattın: +${income.toLocaleString("tr-TR")} TL ✅`);
+    });
+  }
+
+  // ==========================
+  // PAZAR
+  // ==========================
+  function setFilterActive(which) {
+    [filterNewBtn, filterPriceBtn, filterQtyBtn].forEach((btn) =>
+      btn.classList.remove("active")
+    );
+    if (which === "new") filterNewBtn.classList.add("active");
+    if (which === "price") filterPriceBtn.classList.add("active");
+    if (which === "qty") filterQtyBtn.classList.add("active");
+  }
+
+  if (filterNewBtn) {
+    filterNewBtn.addEventListener("click", () => {
+      currentBazaarSort = "new";
+      setFilterActive("new");
+      renderBazaar();
+    });
+  }
+
+  if (filterPriceBtn) {
+    filterPriceBtn.addEventListener("click", () => {
+      currentBazaarSort = "price";
+      priceSortAsc = !priceSortAsc;
+      setFilterActive("price");
+      renderBazaar();
+    });
+  }
+
+  if (filterQtyBtn) {
+    filterQtyBtn.addEventListener("click", () => {
+      currentBazaarSort = "qty";
+      qtySortDesc = !qtySortDesc;
+      setFilterActive("qty");
+      renderBazaar();
+    });
+  }
+
+  if (chatForm) {
+    chatForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      if (!requireAccount()) return;
+      const text = chatInput.value.trim();
+      if (!text) return;
+
+      chatMessages.push({
+        id: `${Date.now()}_${Math.random()}`,
+        user: currentAccount?.username || "Misafir",
+        avatar: currentAccount?.avatar || AVATAR_CHOICES[0].id,
+        text,
+        createdAt: Date.now(),
+      });
+      saveChatMessages();
+      renderChat();
+      chatInput.value = "";
+    });
+  }
+
+  function getSortedListings() {
+    const arr = marketListings.slice();
+
+    if (currentBazaarSort === "new") {
+      arr.sort((a, b) => b.createdAt - a.createdAt);
+    } else if (currentBazaarSort === "price") {
+      arr.sort((a, b) => (priceSortAsc ? a.price - b.price : b.price - a.price));
+    } else if (currentBazaarSort === "qty") {
+      arr.sort((a, b) =>
+        qtySortDesc ? b.quantity - a.quantity : a.quantity - b.quantity
+      );
+    }
+
+    return arr;
+  }
+
+  function renderChat() {
+    if (!chatListEl) return;
+    chatListEl.innerHTML = "";
+
+    const latest = chatMessages.slice(-80);
+    latest.forEach((msg) => {
+      const item = document.createElement("div");
+      item.className = "chat-item";
+
+      const content = document.createElement("div");
+      content.className = "chat-content";
+
+      const userEl = document.createElement("div");
+      userEl.className = "chat-username";
+      userEl.textContent = msg.user;
+
+      const textEl = document.createElement("div");
+      textEl.className = "chat-message";
+      textEl.textContent = msg.text;
+
+      content.appendChild(userEl);
+      content.appendChild(textEl);
+
+      const avatar = document.createElement("img");
+      avatar.className = "chat-avatar";
+      avatar.src = getAvatarUrl(msg.avatar);
+      avatar.alt = msg.user;
+
+      item.appendChild(avatar);
+      item.appendChild(content);
+
+      chatListEl.appendChild(item);
+    });
+
+    chatListEl.scrollTop = chatListEl.scrollHeight;
+  }
+
+  function renderBazaar() {
+    bazaarListEl.innerHTML = "";
+    const sorted = getSortedListings();
+
+    if (sorted.length === 0) {
+      const card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML =
+        "<p style='margin:0;font-size:14px;'>Şu an pazarda süt ilanı yok.</p>";
+      bazaarListEl.appendChild(card);
+      return;
+    }
+
+    sorted.forEach((listing) => {
+      const total = listing.quantity * listing.price;
+      const isOwner = listing.seller === currentUser;
+      const card = document.createElement("div");
+      card.className = "card";
+
+      const title = document.createElement("h3");
+      title.style.margin = "0 0 3px 0";
+      title.style.fontSize = "15px";
+      title.textContent = `Süt: ${listing.quantity.toLocaleString("tr-TR")} L`;
+
+      const p1 = document.createElement("p");
+      p1.style.margin = "2px 0";
+      p1.style.fontSize = "13px";
+      p1.textContent = `Birim fiyat: ${listing.price} TL`;
+
+      const p2 = document.createElement("p");
+      p2.style.margin = "2px 0";
+      p2.style.fontSize = "13px";
+      p2.textContent = `Toplam: ${total.toLocaleString("tr-TR")} TL`;
+
+      const seller = document.createElement("div");
+      seller.className = "bazaar-seller";
+      seller.textContent = isOwner ? `Satan: ${listing.seller} (sen)` : `Satan: ${listing.seller}`;
+
+      const btnRow = document.createElement("div");
+      btnRow.className = "card-actions";
+
+      if (isOwner) {
+        const ownerTag = document.createElement("div");
+        ownerTag.className = "pill";
+        ownerTag.textContent = "Kendi ilanı";
+        btnRow.appendChild(ownerTag);
+      } else {
+        const buyBtnEl = document.createElement("button");
+        buyBtnEl.className = "btn btn-primary";
+        buyBtnEl.style.width = "100%";
+        buyBtnEl.textContent = "Satın Al";
+        buyBtnEl.addEventListener("click", () => openBazaarBuyPopup(listing.id));
+        btnRow.appendChild(buyBtnEl);
+      }
+
+      card.appendChild(title);
+      card.appendChild(p1);
+      card.appendChild(p2);
+      card.appendChild(seller);
+      card.appendChild(btnRow);
+
+      bazaarListEl.appendChild(card);
+    });
+  }
+
+  function openBazaarBuyPopup(listingId) {
+    if (!requireAccount()) return;
+
+    const listing = marketListings.find((l) => l.id === listingId);
+    if (!listing) {
+      showToast("İlan bulunamadı ❌", "error");
+      renderBazaar();
+      return;
+    }
+
+    if (listing.seller === currentUser) {
+      showToast("Kendi ilanını alamazsın ❌", "error");
+      return;
+    }
+
+    const maxAffordable = Math.floor(currentCoins / listing.price);
+    const maxBuy = Math.min(listing.quantity, maxAffordable);
+
+    if (maxBuy <= 0) {
+      showToast("Yeterli TL yok ❌", "error");
+      return;
+    }
+
+    selectedListingId = listingId;
+
+    bazaarBuyInfoEl.innerHTML =
+      `Satan: <strong>${listing.seller}</strong><br>` +
+      `Stok: <strong>${listing.quantity.toLocaleString("tr-TR")} L</strong><br>` +
+      `Birim: <strong>${listing.price} TL</strong><br>` +
+      `Alabileceğin maks: <strong>${maxBuy.toLocaleString("tr-TR")} L</strong>`;
+
+    bazaarBuyQtyInput.value = String(maxBuy);
+    bazaarBuyQtyInput.min = "1";
+    bazaarBuyQtyInput.max = String(maxBuy);
+
+    bazaarBuyOverlay.classList.add("active");
+  }
+
+  if (bazaarBuyCancelBtn) {
+    bazaarBuyCancelBtn.addEventListener("click", () => {
+      bazaarBuyOverlay.classList.remove("active");
+      selectedListingId = null;
+    });
+  }
+
+  if (bazaarBuyOverlay) {
+    bazaarBuyOverlay.addEventListener("click", (e) => {
+      if (e.target === bazaarBuyOverlay) {
+        bazaarBuyOverlay.classList.remove("active");
+        selectedListingId = null;
+      }
+    });
+  }
+
+  if (bazaarBuyConfirmBtn) {
+    bazaarBuyConfirmBtn.addEventListener("click", () => {
+      if (!requireAccount()) {
+        bazaarBuyOverlay.classList.remove("active");
+        selectedListingId = null;
+        return;
+      }
+      if (!selectedListingId) {
+        bazaarBuyOverlay.classList.remove("active");
+        return;
+      }
+
+      const listing = marketListings.find((l) => l.id === selectedListingId);
+      if (!listing) {
+        showToast("İlan bulunamadı ❌", "error");
+        bazaarBuyOverlay.classList.remove("active");
+        selectedListingId = null;
+        renderBazaar();
+        return;
+      }
+
+      if (listing.seller === currentUser) {
+        showToast("Kendi ilanını alamazsın ❌", "error");
+        bazaarBuyOverlay.classList.remove("active");
+        selectedListingId = null;
+        return;
+      }
+
+      const qty = parseInt(bazaarBuyQtyInput.value, 10);
+      if (isNaN(qty) || qty <= 0) {
+        showToast("Geçerli bir miktar gir.", "error");
+        return;
+      }
+
+      const maxAffordable = Math.floor(currentCoins / listing.price);
+      if (qty > listing.quantity) {
+        showToast("İlanda o kadar süt yok ❌", "error");
+        return;
+      }
+      if (qty > maxAffordable) {
+        showToast("Yeterli TL yok ❌", "error");
+        return;
+      }
+
+      const cost = qty * listing.price;
+
+      // Alıcıdan para düş
+      currentCoins -= cost;
+      currentMilk += qty;
+
+      coinAmountEl.textContent = currentCoins;
+      if (milkAmountEl) milkAmountEl.textContent = currentMilk;
+      saveCoins();
+      saveMilk();
+      updateInventoryView();
+
+      // BUGFIX: Satıcıya para ekle
+      if (listing.seller && listing.seller !== currentUser && accounts[listing.seller]) {
+        const sellerAcc = accounts[listing.seller];
+        sellerAcc.coins = (sellerAcc.coins || 0) + cost;
+        saveAccounts();
+      }
+
+      listing.quantity -= qty;
+      if (listing.quantity <= 0) {
+        marketListings = marketListings.filter((l) => l.id !== listing.id);
+      }
+      saveMarketListings();
+      renderBazaar();
+
+      bazaarBuyOverlay.classList.remove("active");
+      showToast(
+        `${qty.toLocaleString("tr-TR")} L süt aldın, -${cost.toLocaleString(
+          "tr-TR"
+        )} TL ✅`
+      );
+      selectedListingId = null;
+    });
+  }
+
+  // ==========================
+  // AYARLAR & FABRİKA
+  // ==========================
+  function updateSettingsView() {
+    if (!currentAccount) {
+      settingsUsernameText.textContent = "Kullanıcı: -";
+    } else {
+      settingsUsernameText.textContent =
+        "Kullanıcı: " + (currentAccount.username || "-");
+    }
+  }
+
+  function updateProfileView() {
+    if (!currentAccount) return;
+    if (profileUsernameEl) profileUsernameEl.textContent = currentAccount.username;
+    if (profileCoinsEl) profileCoinsEl.textContent = currentAccount.coins || 0;
+    if (profileMilkEl) profileMilkEl.textContent = currentAccount.milk || 0;
+    if (profileContrabandEl) profileContrabandEl.textContent = currentAccount.contraband || 0;
+    updateAvatarViews();
+    renderAvatarGrid();
+  }
+
+  function getFactoryState() {
+    if (!currentAccount || !currentAccount.factory) return defaultFactoryState();
+    return currentAccount.factory;
+  }
+
+  function saveFactory(state) {
+    if (!currentAccount) return;
+    currentAccount.factory = state;
+    saveAccounts();
+  }
+
+  function renderFactoryView() {
+    if (!currentAccount) {
+      factoryOwnedTextEl.textContent = "Durum: Giriş yapmadın.";
+      factoryStatusTextEl.textContent = "";
+      factoryActionBtn.textContent = "Giriş yap";
+      factoryActionBtn.classList.add("btn-disabled");
+      factoryActionBtn.disabled = true;
+      factoryCountdownEl.textContent = "";
+      return;
+    }
+
+    const factory = getFactoryState();
+    const now = Date.now();
+
+    if (!factory.owned) {
+      factoryOwnedTextEl.textContent = "Durum: Fabrikan yok.";
+      factoryStatusTextEl.textContent =
+        "20.000 TL ile sadece 1 fabrika satın alabilirsin.";
+      factoryActionBtn.textContent = "Fabrika Satın Al (20.000 TL)";
+      factoryActionBtn.disabled = false;
+      factoryActionBtn.classList.remove("btn-disabled");
+      factoryCountdownEl.textContent = "";
+      return;
+    }
+
+    factoryOwnedTextEl.textContent = "Durum: Fabrika sana ait.";
+
+    if (!factory.productionStart) {
+      factoryStatusTextEl.textContent = "Üretim pasif. 2 saatlik üretimi başlat.";
+      factoryActionBtn.textContent = "Üretimi Başlat";
+      factoryActionBtn.disabled = false;
+      factoryActionBtn.classList.remove("btn-disabled");
+      factoryCountdownEl.textContent = "";
+    } else {
+      const elapsed = now - factory.productionStart;
+      const remaining = FACTORY_DURATION_MS - elapsed;
+
+      if (remaining <= 0) {
+        factoryStatusTextEl.textContent = "Üretim hazır. Teslim alabilirsin.";
+        factoryActionBtn.textContent = `Üretimi Teslim Al (+${FACTORY_OUTPUT} kaçak)`;
+        factoryActionBtn.disabled = false;
+        factoryActionBtn.classList.remove("btn-disabled");
+        factoryCountdownEl.textContent = "";
+      } else {
+        const h = Math.floor(remaining / (1000 * 60 * 60));
+        const m = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+        const s = Math.floor((remaining % (1000 * 60)) / 1000);
+        factoryStatusTextEl.textContent = "Üretim devam ediyor...";
+        factoryActionBtn.textContent = "Üretim Devam Ediyor";
+        factoryActionBtn.disabled = true;
+        factoryActionBtn.classList.add("btn-disabled");
+        factoryCountdownEl.textContent = `Kalan süre: ${h} sa ${m} dk ${s} sn`;
+      }
+    }
+  }
+
+  if (factoryActionBtn) {
+    factoryActionBtn.addEventListener("click", () => {
+      if (!requireAccount()) return;
+
+      const factory = getFactoryState();
+      const now = Date.now();
+
+      if (!factory.owned) {
+        if (currentCoins < FACTORY_PRICE) {
+          showToast("Fabrika için yeterli TL yok ❌", "error");
+          return;
+        }
+        currentCoins -= FACTORY_PRICE;
+        coinAmountEl.textContent = currentCoins;
+        saveCoins();
+
+        factory.owned = true;
+        factory.productionStart = null;
+        saveFactory(factory);
+
+        showToast("Fabrika satın alındı ✅");
+        renderFactoryView();
+        return;
+      }
+
+      if (!factory.productionStart) {
+        factory.productionStart = now;
+        saveFactory(factory);
+        showToast("Üretim başlatıldı 🏭");
+        renderFactoryView();
+        return;
+      }
+
+      const elapsed = now - factory.productionStart;
+      const remaining = FACTORY_DURATION_MS - elapsed;
+
+      if (remaining <= 0) {
+        currentContraband += FACTORY_OUTPUT;
+        saveContraband();
+        updateInventoryView();
+
+        showToast(
+          `Üretim teslim alındı: +${FACTORY_OUTPUT} kaçak malzeme ✅`
+        );
+        factory.productionStart = null;
+        saveFactory(factory);
+        renderFactoryView();
+      }
+    });
+  }
+
+  // ==========================
+  // BANKA
+  // ==========================
+  function updateBankView() {
+    if (!bankAccountNumberEl || !bankBalanceEl) return;
+
+    if (!currentAccount) {
+      bankAccountNumberEl.textContent = "-";
+      bankBalanceEl.textContent = "0";
+      if (bankTransferAccountEl) bankTransferAccountEl.textContent = "-";
+      if (bankTransferBalanceEl) bankTransferBalanceEl.textContent = "0";
+      if (bankCopyBtn) {
+        bankCopyBtn.disabled = true;
+        bankCopyBtn.classList.add("btn-disabled");
+      }
+      return;
+    }
+
+    ensureCurrentAccountNumber();
+    bankAccountNumberEl.textContent = currentAccount.accountNumber;
+    bankBalanceEl.textContent = currentCoins;
+    if (coinAmountEl) coinAmountEl.textContent = currentCoins;
+    if (bankTransferAccountEl) bankTransferAccountEl.textContent = currentAccount.accountNumber;
+    if (bankTransferBalanceEl) bankTransferBalanceEl.textContent = currentCoins;
+
+    if (bankCopyBtn) {
+      bankCopyBtn.disabled = false;
+      bankCopyBtn.classList.remove("btn-disabled");
+    }
+
+    if (bankGoTransferBtn) {
+      bankGoTransferBtn.disabled = currentCoins <= 0;
+      bankGoTransferBtn.classList.toggle("btn-disabled", currentCoins <= 0);
+    }
+  }
+
+  function addBankHistory(account, entry) {
+    if (!account.bankHistory) account.bankHistory = [];
+    account.bankHistory.unshift({ id: `${Date.now()}_${Math.random()}`, ...entry });
+    if (account.bankHistory.length > 30) {
+      account.bankHistory = account.bankHistory.slice(0, 30);
+    }
+  }
+
+  function renderBankHistory() {
+    if (!bankHistoryListEl) return;
+    bankHistoryListEl.innerHTML = "";
+
+    if (!currentAccount || !currentAccount.bankHistory || currentAccount.bankHistory.length === 0) {
+      bankHistoryListEl.innerHTML =
+        "<div class='history-item'>Henüz hareket yok.</div>";
+      return;
+    }
+
+    currentAccount.bankHistory.forEach((item) => {
+      const div = document.createElement("div");
+      div.className = "history-item";
+      const isOut = item.type === "out";
+      const counterpart = isOut ? item.to : item.from;
+      div.innerHTML =
+        `<strong>${isOut ? "Gönderildi" : "Geldi"}: ${item.amount.toLocaleString("tr-TR")} TL</strong><br>` +
+        `${isOut ? "Alıcı" : "Gönderen"}: ${counterpart || "-"}` +
+        `<div class="meta">${formatTime(item.time)}</div>`;
+      bankHistoryListEl.appendChild(div);
+    });
+  }
+
+  function performTransfer(targetNumber, amount) {
+    if (!requireAccount()) return false;
+
+    const targetAccount = findAccountByNumber(targetNumber);
+    if (!targetAccount) {
+      showToast("Hedef hesap bulunamadı ❌", "error");
+      return false;
+    }
+    if (targetAccount === currentAccount) {
+      showToast("Kendine para gönderemezsin.", "error");
+      return false;
+    }
+    if (isNaN(amount) || amount <= 0) {
+      showToast("Geçerli bir tutar gir.", "error");
+      return false;
+    }
+    if (amount > currentCoins) {
+      showToast("Yetersiz bakiye ❌", "error");
+      return false;
+    }
+
+    currentCoins -= amount;
+    saveCoins();
+    updateInventoryView();
+    updateBankView();
+    updateProfileView();
+
+    targetAccount.coins = (targetAccount.coins || 0) + amount;
+
+    addBankHistory(currentAccount, {
+      type: "out",
+      amount,
+      to: targetAccount.accountNumber,
+      time: Date.now(),
+    });
+    addBankHistory(targetAccount, {
+      type: "in",
+      amount,
+      from: currentAccount.accountNumber,
+      time: Date.now(),
+    });
+
+    saveAccounts();
+    renderBankHistory();
+    showToast(`Gönderildi: -${amount.toLocaleString("tr-TR")} TL ✅`);
+    return true;
+  }
+
+  if (bankCopyBtn) {
+    bankCopyBtn.addEventListener("click", () => {
+      if (!requireAccount()) return;
+      const number = currentAccount.accountNumber;
+      if (!number) return;
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(number).then(
+          () => showToast("Hesap numarası kopyalandı ✅"),
+          () => showToast("Kopyalama başarısız ❌", "error")
+        );
+      } else {
+        const temp = document.createElement("input");
+        temp.value = number;
+        document.body.appendChild(temp);
+        temp.select();
+        document.execCommand("copy");
+        document.body.removeChild(temp);
+        showToast("Hesap numarası kopyalandı ✅");
+      }
+    });
+  }
+
+  if (bankGoTransferBtn) {
+    bankGoTransferBtn.addEventListener("click", () => {
+      if (!requireAccount()) return;
+      showPage("bank-transfer");
+      updateBankView();
+      bankTransferTargetInput.value = "";
+      bankTransferAmountInput.value = "";
+    });
+  }
+
+  if (bankGoHistoryBtn) {
+    bankGoHistoryBtn.addEventListener("click", () => {
+      if (!requireAccount()) return;
+      showPage("bank-history");
+      renderBankHistory();
+    });
+  }
+
+  if (bankTransferBackBtn) {
+    bankTransferBackBtn.addEventListener("click", () => showPage("bank"));
+  }
+
+  if (bankHistoryBackBtn) {
+    bankHistoryBackBtn.addEventListener("click", () => showPage("bank"));
+  }
+
+  if (bankTransferSubmitBtn) {
+    bankTransferSubmitBtn.addEventListener("click", () => {
+      if (!requireAccount()) return;
+      const target = (bankTransferTargetInput.value || "").trim();
+      const amount = parseInt(bankTransferAmountInput.value, 10);
+
+      if (!/^\d{11}$/.test(target)) {
+        showToast("Hesap numarası 11 haneli olmalı.", "error");
+        return;
+      }
+
+      const ok = performTransfer(target, amount);
+      if (ok) {
+        bankTransferTargetInput.value = "";
+        bankTransferAmountInput.value = "";
+        updateBankView();
+      }
+    });
+  }
+
+  // ==========================
+  // NAVİGASYON
+  // ==========================
+  navButtons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const target = btn.dataset.target;
+      if (target) showPage(target);
+    });
+  });
+
+  const homeMainButtons = document.querySelectorAll(".home-main-button");
+  homeMainButtons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const target = btn.dataset.target;
+      if (target) showPage(target);
+    });
+  });
+
+  if (backButton) {
+    backButton.addEventListener("click", () => showPage("home"));
+  }
+
+  if (editAvatarBtn && avatarChooserCard) {
+    editAvatarBtn.addEventListener("click", () => {
+      if (!requireAccount()) return;
+      avatarChooserCard.style.display =
+        avatarChooserCard.style.display === "none" ? "block" : "none";
+      renderAvatarGrid();
+    });
+  }
+
+  // ==========================
+  // GAME START
+  // ==========================
+  function startGameForCurrentUser() {
+    normalizeCurrentAccount();
+    loadCoins();
+    loadMilk();
+    loadContraband();
+    loadCows();
+    loadMarketListings();
+    loadChatMessages();
+    updateCountdown();
+    updateInventoryView();
+    applyMode();
+    updateSettingsView();
+    updateHomeProfileStrip();
+    updateProfileView();
+    renderChat();
+    renderBazaar();
+    renderFactoryView();
+    updateBankView();
+    showPage("home");
+  }
+
+  (function init() {
+    loadAccounts();
+    loadMarketListings();
+    loadChatMessages();
+    showAuth();
+  })();
+  
+  const openProfile = document.getElementById("open-profile");
+  if (openProfile) {
+    openProfile.addEventListener("click", () => {
+      showPage("profile");
+      updateProfileView();
+    });
+  }
+
+  if (playerUsernameEl) {
+    playerUsernameEl.addEventListener("click", () => {
+      showPage("profile");
+      updateProfileView();
+    });
+  }
+  </script>
+</body>
+</html>
