@@ -295,14 +295,18 @@
 
     .back-btn {
       border: 1px solid var(--card-border);
-      background: linear-gradient(135deg, #0ea5e9, #6366f1);
-      color: #ffffff;
-      border-radius: 999px;
-      padding: 7px 12px;
+      background: var(--card-bg);
+      color: var(--text-main);
+      border-radius: 10px;
+      padding: 8px 12px;
       font-size: 14px;
       cursor: pointer;
       display: none; /* JS ile değişiyor */
-      box-shadow: 0 6px 16px rgba(14, 165, 233, 0.28);
+      box-shadow: none;
+      gap: 6px;
+      align-items: center;
+      justify-content: center;
+      display: inline-flex;
     }
     .back-btn:active {
       transform: translateY(1px);
@@ -757,9 +761,10 @@
       width: 54px;
       height: 54px;
       border-radius: 50%;
-      border: 2px solid var(--card-border);
+      border: none;
       object-fit: cover;
-      background: var(--card-bg);
+      background: transparent;
+      box-shadow: none;
     }
 
     .avatar-username {
@@ -776,13 +781,46 @@
       gap: 12px;
     }
 
+    .profile-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      margin-top: 4px;
+    }
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+    .status-online {
+      color: #22c55e;
+    }
+    .status-online .status-dot {
+      background: #22c55e;
+      box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.18);
+    }
+    .status-offline {
+      color: #9ca3af;
+    }
+    .status-offline .status-dot {
+      background: #9ca3af;
+      box-shadow: none;
+    }
+
     .profile-avatar-large {
       width: 90px;
       height: 90px;
       border-radius: 50%;
-      border: 3px solid var(--card-border);
+      border: none;
       object-fit: cover;
-      background: var(--card-bg);
+      background: transparent;
+      box-shadow: none;
+      transition: box-shadow var(--transition-fast);
+    }
+    .profile-avatar-large.online {
+      box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.25);
     }
 
     .profile-meta {
@@ -818,8 +856,9 @@
       height: 72px;
       border-radius: 50%;
       object-fit: cover;
-      border: 2px solid var(--card-border);
-      background: var(--card-bg);
+      border: none;
+      background: transparent;
+      box-shadow: none;
     }
     .avatar-choice span { font-size: 13px; font-weight: 600; }
 
@@ -837,11 +876,13 @@
       display: flex;
       flex-direction: column;
       gap: 10px;
+      min-height: 320px;
     }
     .chat-list {
       display: flex;
       flex-direction: column;
       gap: 10px;
+      overflow-y: auto;
     }
     .chat-item {
       display: flex;
@@ -853,7 +894,7 @@
       padding: 10px;
     }
     .chat-content { flex: 1; display: flex; flex-direction: column; gap: 3px; }
-    .chat-username { font-weight: 700; font-size: 14px; }
+    .chat-username { font-weight: 700; font-size: 14px; cursor: pointer; }
     .chat-message { font-size: 14px; color: var(--text-main); }
     .chat-avatar {
       width: 42px;
@@ -863,7 +904,7 @@
       border: 2px solid var(--card-border);
       background: var(--card-bg);
     }
-    .chat-form { display: flex; gap: 6px; }
+    .chat-form { display: flex; gap: 6px; position: sticky; bottom: 0; background: var(--bg-body); padding: 6px 0; }
     .chat-form input {
       flex: 1;
       padding: 10px;
@@ -909,7 +950,7 @@
   <!-- TOP BAR -->
   <header class="top-bar">
     <div class="top-left">
-      <button id="back-button" class="back-btn">⬅️ Geri</button>
+      <button id="back-button" class="back-btn">⟵ Geri</button>
       <div class="logo">
         🕶️ MAFYA
       </div>
@@ -1187,6 +1228,10 @@
         <div><strong id="profile-username"></strong></div>
         <div class="muted-label">Nakit: <span id="profile-coins">0</span> TL</div>
         <div class="muted-label">Süt: <span id="profile-milk">0</span> L | Kaçak: <span id="profile-contraband">0</span></div>
+        <div id="profile-status" class="profile-status status-offline">
+          <span class="status-dot"></span>
+          <span id="profile-status-text">Offline</span>
+        </div>
       </div>
     </div>
     <div class="card-actions" style="margin-top:12px;">
@@ -1419,6 +1464,9 @@
   const profileCoinsEl = document.getElementById("profile-coins");
   const profileMilkEl = document.getElementById("profile-milk");
   const profileContrabandEl = document.getElementById("profile-contraband");
+  const profileStatusEl = document.getElementById("profile-status");
+  const profileStatusTextEl = document.getElementById("profile-status-text");
+  const profileStatusDotEl = profileStatusEl?.querySelector(".status-dot");
   const avatarGridEl = document.getElementById("avatar-grid");
   const avatarChooserCard = document.getElementById("avatar-chooser");
   const editAvatarBtn = document.getElementById("edit-avatar-btn");
@@ -1471,6 +1519,10 @@
     if (!target || target === currentPage) {
       updateBackButton();
       return;
+    }
+
+    if (options.resetHistory) {
+      pageHistory = [];
     }
 
     if (options.push !== false && currentPage) {
@@ -1731,6 +1783,12 @@
 
       avatarGridEl.appendChild(card);
     });
+  }
+
+  function openProfileForUser(username) {
+    const acc = getAccountByUsername(username);
+    updateProfileView(acc, username);
+    showPage("profile");
   }
 
   function findAccountByNumber(number) {
@@ -2382,7 +2440,10 @@
     if (!chatListEl) return;
     chatListEl.innerHTML = "";
 
-    const latest = chatMessages.slice(-80);
+    const latest = chatMessages
+      .slice(-80)
+      .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+
     latest.forEach((msg) => {
       const item = document.createElement("div");
       item.className = "chat-item";
@@ -2393,6 +2454,7 @@
       const userEl = document.createElement("div");
       userEl.className = "chat-username";
       userEl.textContent = msg.user;
+      userEl.addEventListener("click", () => openProfileForUser(msg.user));
 
       const textEl = document.createElement("div");
       textEl.className = "chat-message";
@@ -2405,6 +2467,7 @@
       avatar.className = "chat-avatar";
       avatar.src = getAvatarUrl(msg.avatar);
       avatar.alt = msg.user;
+      avatar.addEventListener("click", () => openProfileForUser(msg.user));
 
       item.appendChild(avatar);
       item.appendChild(content);
@@ -2412,7 +2475,7 @@
       chatListEl.appendChild(item);
     });
 
-    chatListEl.scrollTop = chatListEl.scrollHeight;
+    chatListEl.scrollTop = 0;
   }
 
   function renderBazaar() {
@@ -2626,14 +2689,46 @@
     }
   }
 
-  function updateProfileView() {
-    if (!currentAccount) return;
-    if (profileUsernameEl) profileUsernameEl.textContent = currentAccount.username;
-    if (profileCoinsEl) profileCoinsEl.textContent = currentAccount.coins || 0;
-    if (profileMilkEl) profileMilkEl.textContent = currentAccount.milk || 0;
-    if (profileContrabandEl) profileContrabandEl.textContent = currentAccount.contraband || 0;
-    updateAvatarViews();
-    renderAvatarGrid();
+  function setProfileStatus(isOnline) {
+    if (!profileStatusEl || !profileStatusTextEl || !profileStatusDotEl) return;
+    profileStatusEl.classList.remove("status-online", "status-offline");
+    profileStatusEl.classList.add(isOnline ? "status-online" : "status-offline");
+    profileStatusTextEl.textContent = isOnline ? "Çevrimiçi" : "Offline";
+  }
+
+  function getAccountByUsername(username) {
+    if (!username) return null;
+    return accounts[username] || null;
+  }
+
+  function updateProfileView(targetAccount = currentAccount, fallbackName = currentUser) {
+    const acc = targetAccount || null;
+    const isSelf = !!currentAccount && !!acc && acc.username === currentAccount.username;
+    const username = acc?.username || fallbackName || "-";
+
+    if (profileUsernameEl) profileUsernameEl.textContent = username;
+    if (profileCoinsEl) profileCoinsEl.textContent = acc?.coins ?? "-";
+    if (profileMilkEl) profileMilkEl.textContent = acc?.milk ?? "-";
+    if (profileContrabandEl) profileContrabandEl.textContent = acc?.contraband ?? "-";
+
+    const avatarId = acc?.avatar || currentAccount?.avatar || AVATAR_CHOICES[0]?.id;
+    if (profileAvatarEl) {
+      profileAvatarEl.src = getAvatarUrl(avatarId);
+      profileAvatarEl.classList.toggle("online", isSelf);
+    }
+
+    setProfileStatus(isSelf);
+
+    if (editAvatarBtn) {
+      editAvatarBtn.style.display = isSelf ? "inline-flex" : "none";
+    }
+
+    if (isSelf) {
+      updateAvatarViews();
+      renderAvatarGrid();
+    } else if (avatarChooserCard) {
+      avatarChooserCard.style.display = "none";
+    }
   }
 
   function getFactoryState() {
@@ -2988,7 +3083,10 @@
   navButtons.forEach((btn) => {
     btn.addEventListener("click", () => {
       const target = btn.dataset.target;
-      if (target) showPage(target);
+      if (target) {
+        pageHistory = [];
+        showPage(target, { push: false, resetHistory: true });
+      }
     });
   });
 
@@ -3049,15 +3147,13 @@
   const openProfile = document.getElementById("open-profile");
   if (openProfile) {
     openProfile.addEventListener("click", () => {
-      showPage("profile");
-      updateProfileView();
+      openProfileForUser(currentUser);
     });
   }
 
   if (playerUsernameEl) {
     playerUsernameEl.addEventListener("click", () => {
-      showPage("profile");
-      updateProfileView();
+      openProfileForUser(currentUser);
     });
   }
   </script>
