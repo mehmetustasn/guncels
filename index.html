@@ -1361,6 +1361,8 @@
   let selectedListingId = null;
   let currentPage = "home";
   let pageHistory = [];
+  let activeProfileAccount = null;
+  let activeProfileName = null;
 
   // ==========================
   // ELEMENTLER
@@ -1505,7 +1507,8 @@
     if (target === "factory") renderFactoryView();
     if (["bank", "bank-info", "bank-transfer", "bank-history"].includes(target))
       updateBankView();
-    if (target === "profile") updateProfileView();
+    if (target === "profile")
+      updateProfileView(activeProfileAccount || currentAccount, activeProfileName || currentUser);
     if (target === "chat") renderChat();
   }
 
@@ -1711,6 +1714,19 @@
     const url = getAvatarUrl(currentAccount?.avatar);
     if (homeAvatarImg) homeAvatarImg.src = url;
     if (profileAvatarEl) profileAvatarEl.src = url;
+  }
+
+  function getAccountByUsername(username) {
+    if (!username) return null;
+    return accounts[username] || null;
+  }
+
+  function openProfileForUser(username) {
+    const acc = getAccountByUsername(username);
+    activeProfileAccount = acc || null;
+    activeProfileName = username || null;
+    updateProfileView(acc, username);
+    showPage("profile");
   }
 
   function renderAvatarGrid() {
@@ -2405,6 +2421,7 @@
       const userEl = document.createElement("div");
       userEl.className = "chat-username";
       userEl.textContent = msg.user;
+      userEl.addEventListener("click", () => openProfileForUser(msg.user));
 
       const textEl = document.createElement("div");
       textEl.className = "chat-message";
@@ -2417,6 +2434,7 @@
       avatar.className = "chat-avatar";
       avatar.src = getAvatarUrl(msg.avatar);
       avatar.alt = msg.user;
+      avatar.addEventListener("click", () => openProfileForUser(msg.user));
 
       item.appendChild(avatar);
       item.appendChild(content);
@@ -2638,14 +2656,36 @@
     }
   }
 
-  function updateProfileView() {
-    if (!currentAccount) return;
-    if (profileUsernameEl) profileUsernameEl.textContent = currentAccount.username;
-    if (profileCoinsEl) profileCoinsEl.textContent = currentAccount.coins || 0;
-    if (profileMilkEl) profileMilkEl.textContent = currentAccount.milk || 0;
-    if (profileContrabandEl) profileContrabandEl.textContent = currentAccount.contraband || 0;
-    updateAvatarViews();
-    renderAvatarGrid();
+  function updateProfileView(targetAccount = currentAccount, fallbackName = currentUser) {
+    const acc = targetAccount || null;
+    const isSelf = !!currentAccount && !!acc && acc.username === currentAccount.username;
+    const username = acc?.username || fallbackName || "-";
+
+    if (profileUsernameEl) profileUsernameEl.textContent = username;
+    if (profileCoinsEl) profileCoinsEl.textContent = acc?.coins ?? "-";
+    if (profileMilkEl) profileMilkEl.textContent = acc?.milk ?? "-";
+    if (profileContrabandEl) profileContrabandEl.textContent = acc?.contraband ?? "-";
+
+    const avatarId = acc?.avatar || currentAccount?.avatar || AVATAR_CHOICES[0]?.id;
+    if (profileAvatarEl) {
+      profileAvatarEl.src = getAvatarUrl(avatarId);
+      profileAvatarEl.classList.toggle("online", isSelf);
+    }
+
+    setProfileStatus(isSelf);
+
+    if (editAvatarBtn) {
+      editAvatarBtn.style.display = isSelf ? "inline-flex" : "none";
+    }
+
+    if (isSelf) {
+      updateAvatarViews();
+      renderAvatarGrid();
+      activeProfileAccount = currentAccount;
+      activeProfileName = currentUser;
+    } else if (avatarChooserCard) {
+      avatarChooserCard.style.display = "none";
+    }
   }
 
   function getFactoryState() {
@@ -3032,6 +3072,8 @@
     normalizeCurrentAccount();
     pageHistory = [];
     currentPage = null;
+    activeProfileAccount = currentAccount;
+    activeProfileName = currentUser;
     loadCoins();
     loadMilk();
     loadContraband();
@@ -3043,7 +3085,7 @@
     applyMode();
     updateSettingsView();
     updateHomeProfileStrip();
-    updateProfileView();
+    updateProfileView(activeProfileAccount, activeProfileName);
     renderChat();
     renderBazaar();
     renderFactoryView();
@@ -3061,15 +3103,13 @@
   const openProfile = document.getElementById("open-profile");
   if (openProfile) {
     openProfile.addEventListener("click", () => {
-      showPage("profile");
-      updateProfileView();
+      openProfileForUser(currentUser);
     });
   }
 
   if (playerUsernameEl) {
     playerUsernameEl.addEventListener("click", () => {
-      showPage("profile");
-      updateProfileView();
+      openProfileForUser(currentUser);
     });
   }
   </script>
